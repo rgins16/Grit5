@@ -7,8 +7,8 @@
     android:id="@+id/videoContainer">
 
     <VideoView
-        android:layout_width="117dp"
-        android:layout_height="136dp"
+        android:layout_width="300dp"
+        android:layout_height="375dp"
         android:id="@+id/videoView"
         android:layout_gravity="top|center_horizontal" />
 </LinearLayout>

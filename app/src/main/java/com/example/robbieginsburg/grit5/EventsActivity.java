@@ -77,7 +77,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     MyLocationListener location;
     LocationManager lm;
 
-    Uri pictureUri, videoUri;
+    Uri pictureUri, videoUri = null;
 
     private LatLng currentLocation, lastUpdatedLocation = null;
 
@@ -86,8 +86,6 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     Calendar calendar;
 
     String intent = "";
-
-    String videoPath = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -260,7 +258,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                 intent = "picture";
 
                 // specifies the directory for the pictures
-                File pictureDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/Grit Pictures");
+                File pictureDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/Grit_Pictures");
 
                 // if the directory doesn't exist on the device, add it
                 if(!pictureDirectory.exists()) pictureDirectory.mkdirs();
@@ -285,7 +283,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                 intent = "video";
 
                 // specifies the directory for the pictures
-                File videoDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/Grit Videos");
+                File videoDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/Grit_Videos");
 
                 // if the directory doesn't exist on the device, add it
                 if(!videoDirectory.exists()) videoDirectory.mkdirs();
@@ -293,13 +291,11 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                 if(calendar.get(Calendar.AM_PM) == 0){fileName += "_AM.mp4";}
                 else{fileName += "_PM.mp4";}
 
-                //videoPath = videoDirectory + "/" + fileName;
-
-                // the name of the picture will be the time since epoch in milliseconds
-                //String pictureName = String.valueOf(System.currentTimeMillis() + ".png");
                 File capturedVideo = new File(videoDirectory, fileName);
-                videoUri = Uri.fromFile(capturedVideo);
+                //videoUri = Uri.fromFile(capturedVideo);
+                videoUri = Uri.parse(videoDirectory + "/" + fileName);
                 videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, videoUri);
+                videoIntent.putExtra(MediaStore.EXTRA_SIZE_LIMIT, 10000000);
                 startActivityForResult(videoIntent, 2);
                 break;
         }
@@ -354,13 +350,12 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
             container = (ViewGroup) layoutInflator.inflate(R.layout.videocontainer, null);
             VideoView video = (VideoView) container.findViewById(R.id.videoView);
 
-            // start the media controller
-            //MediaController mediacontroller = new MediaController(this);
-            //mediacontroller.setAnchorView(video);
-            //video.setMediaController(mediacontroller);
+            video.setMediaController(new MediaController(this));
+
             video.setVideoURI(videoUri);
-            //video.requestFocus();
             video.start();
+
+            video.requestFocus();
         }
 
         popUpWindow = new PopupWindow(container, 800, 1220, true);
