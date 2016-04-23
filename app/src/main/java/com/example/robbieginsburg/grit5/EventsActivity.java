@@ -48,6 +48,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class EventsActivity extends AppCompatActivity implements View.OnClickListener, GoogleMap.OnMarkerClickListener {
@@ -80,13 +81,12 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
     private Marker currentLocationMarker = null;
 
+    Calendar calendar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_events);
-
-        //Log.d("Year", String.valueOf(1970 + ((((System.currentTimeMillis()/1000)/60)/60)/24)/365));
 
         relativeLayout = (RelativeLayout) findViewById(R.id.relative);
 
@@ -218,24 +218,17 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         // if the action was to capture a picture, then store all relevant data in the database
-        if (requestCode == 1) {
-            if (resultCode == RESULT_OK) {
+        if (requestCode == 1 && resultCode == RESULT_OK) {
 
 
-
-                Toast.makeText(this, "Picture Received"/*data.getData().toString()*/, Toast.LENGTH_SHORT).show();
-
-                //Bundle extras = data.getExtras();
-                //imageBitmap = (Bitmap) extras.get("data");
-                //imageView.setImageBitmap(imageBitmap);
-            }
+            Toast.makeText(this, "Picture Received", Toast.LENGTH_SHORT).show();
         }
 
         // if the method was to capture a video, then store all relevant data in the database
-        if (requestCode == 2) {
-            if (resultCode == RESULT_OK) {
-                Toast.makeText(this, "Video Received"/*data.getData().toString()*/, Toast.LENGTH_SHORT).show();
-            }
+        if (requestCode == 2 && resultCode == RESULT_OK) {
+
+
+            Toast.makeText(this, "Video Received", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -245,13 +238,30 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
             // if the user clicked the picture button, open the camera and capture a picture
             case R.id.pictureButton:
 
+                // camera intent
                 Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
+                // specifies the directory for the pictures
                 File pictureDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/Grit Pictures");
 
+                // if the directory doesn't exist on the device, add it
                 if(!pictureDirectory.exists()) pictureDirectory.mkdirs();
 
-                String pictureName = String.valueOf(System.currentTimeMillis() + ".png");
+                // this chunk of code names the file based on the current date and time
+                calendar = Calendar.getInstance();
+                int hour = calendar.get(Calendar.HOUR);
+                if(hour == 0) {
+                    hour = 12;
+                }
+                String pictureName = String.valueOf((calendar.get(Calendar.MONTH) + 1) + ":" +
+                        calendar.get(Calendar.DATE) + ":" + calendar.get(Calendar.YEAR) + "_" +
+                        hour + ":" + calendar.get(Calendar.MINUTE));
+                if(calendar.get(Calendar.AM_PM) == 0){pictureName += "_AM.png";}
+                else{pictureName += "_PM.png";}
+
+
+                // the name of the picture will be the time since epoch in milliseconds
+                //String pictureName = String.valueOf(System.currentTimeMillis() + ".png");
                 File capturedPicture = new File(pictureDirectory, pictureName);
                 pictureUri = Uri.fromFile(capturedPicture);
                 cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureUri);
