@@ -11,7 +11,7 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.robbieginsburg.stylebutton.HomeScreenActivity"
     tools:showIn="@layout/activity_home_screen"
-    android:background="#000000"
+    android:background="#181818"
     android:orientation="vertical">
 
     <LinearLayout
@@ -24,7 +24,7 @@
             android:id="@+id/pawImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/paw2"/>
+            android:src="@drawable/paw3"/>
     </LinearLayout>
 
     <LinearLayout
@@ -37,8 +37,6 @@
             android:id="@+id/eventsButton"
             android:drawableLeft="@drawable/events"
             android:paddingLeft="75dp"
-            android:textColor="#FFFFFF"
-            android:textSize="30sp"
             android:layout_width="300dp"
             android:layout_height="150dp"
             android:background="@drawable/button"/>
@@ -55,8 +53,6 @@
             android:id="@+id/mapsButton"
             android:drawableLeft="@drawable/maps"
             android:paddingLeft="75dp"
-            android:textColor="#FFFFFF"
-            android:textSize="30sp"
             android:layout_width="300dp"
             android:layout_height="150dp"
             android:background="@drawable/button"/>
@@ -73,8 +69,6 @@
             android:id="@+id/phonebookButton"
             android:drawableLeft="@drawable/phone"
             android:paddingLeft="75dp"
-            android:textColor="#FFFFFF"
-            android:textSize="30sp"
             android:layout_width="300dp"
             android:layout_height="150dp"
             android:background="@drawable/button"/>
