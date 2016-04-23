@@ -293,7 +293,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                 if(calendar.get(Calendar.AM_PM) == 0){fileName += "_AM.mp4";}
                 else{fileName += "_PM.mp4";}
 
-                videoPath = videoDirectory + "/" + fileName;
+                //videoPath = videoDirectory + "/" + fileName;
 
                 // the name of the picture will be the time since epoch in milliseconds
                 //String pictureName = String.valueOf(System.currentTimeMillis() + ".png");
@@ -355,11 +355,11 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
             VideoView video = (VideoView) container.findViewById(R.id.videoView);
 
             // start the media controller
-            MediaController mediacontroller = new MediaController(this);
-            mediacontroller.setAnchorView(video);
-            video.setMediaController(mediacontroller);
+            //MediaController mediacontroller = new MediaController(this);
+            //mediacontroller.setAnchorView(video);
+            //video.setMediaController(mediacontroller);
             video.setVideoURI(videoUri);
-            video.requestFocus();
+            //video.requestFocus();
             video.start();
         }
 
