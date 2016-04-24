@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -100,7 +101,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         LatLng UMBC = new LatLng(39.255462, -76.711110);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UMBC, 16));
 
-        googleMap.addMarker(new MarkerOptions().position(UMBC));
+        //googleMap.addMarker(new MarkerOptions().position(UMBC));
         googleMap.setOnMarkerClickListener(this);
 
         configureMapSettings();
@@ -277,9 +278,10 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         if (requestCode == 1 && resultCode == RESULT_OK) {
 
             // creates a new dialog box
-            Dialog dialog = new Dialog(this);
+            final Dialog dialog = new Dialog(this);
             dialog.setContentView(R.layout.imagesubmission);
             dialog.setCanceledOnTouchOutside(true);
+            dialog.getWindow().setLayout(800, 1220);
             dialog.show();
 
             // gets rid of the dim that is enabled by default
@@ -288,6 +290,30 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
             // sets up the image from xml file
             ImageView image = (ImageView) dialog.findViewById(R.id.imageSubmissionView);
             image.setImageURI(pictureSubmissionUri);
+
+            final String timeStamp = String.valueOf(System.currentTimeMillis());
+            EditText pictureText = (EditText) dialog.findViewById(R.id.editTextPicture);
+            Button pictureSubmit = (Button) dialog.findViewById(R.id.pictureSubmitButton);
+
+            // click listener for the submit button
+            pictureSubmit.setOnClickListener(this);
+            pictureSubmit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+
+                    // adds a marker for the new post
+                    googleMap.addMarker(new MarkerOptions()
+                            .position(location.getLatLong())
+                            .snippet(timeStamp)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+                    // create object and push it to the database
+                    // time since epoch
+                    // media file
+                    // description of media file
+                }
+            });
         }
 
         // if the method was to capture a video, then store all relevant data in the database
@@ -297,6 +323,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
             Dialog dialog = new Dialog(this);
             dialog.setContentView(R.layout.videosubmission);
             dialog.setCanceledOnTouchOutside(true);
+            dialog.getWindow().setLayout(800, 1220);
             dialog.show();
 
             // gets rid of the dim that is enabled by default
@@ -364,6 +391,8 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public boolean onMarkerClick(Marker marker) {
 
+        //Log.d("Snippet", marker.getSnippet());
+
         return true;
     }
 
@@ -385,7 +414,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
             currentLocation = location.getLatLong();
 
             // calls the function to change the marker for the user's location
-            updateUserLocation();
+            //updateUserLocation();
         }
     }
 
