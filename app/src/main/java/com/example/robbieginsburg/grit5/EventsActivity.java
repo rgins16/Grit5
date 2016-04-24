@@ -1,12 +1,10 @@
 package com.example.robbieginsburg.grit5;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -15,23 +13,12 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.MediaController;
-import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -44,14 +31,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 public class EventsActivity extends AppCompatActivity implements View.OnClickListener, GoogleMap.OnMarkerClickListener {
 
@@ -70,14 +51,10 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
     private Button picture, video;
 
-    private PopupWindow popUpWindow;
-    private LayoutInflater layoutInflator;
-    private RelativeLayout relativeLayout;
-
     MyLocationListener location;
     LocationManager lm;
 
-    Uri pictureUri, videoUri = null;
+    Uri pictureSubmissionUri = null;
 
     private LatLng currentLocation, lastUpdatedLocation = null;
 
@@ -85,14 +62,10 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
     Calendar calendar;
 
-    String intent = "";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_events);
-
-        relativeLayout = (RelativeLayout) findViewById(R.id.relative);
 
         picture = (Button) findViewById(R.id.pictureButton);
         video = (Button) findViewById(R.id.videoButton);
@@ -215,6 +188,85 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
         // disables rotate gestures
         uiSettings.setRotateGesturesEnabled(false);
+
+        // disables the gps and navigation buttons on the bottom right of the screen
+        uiSettings.setMapToolbarEnabled(false);
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        // calls the function to create a unique file name
+        String fileName = createUniqueFileName();
+
+        switch (v.getId()) {
+
+            case R.id.pictureButton:
+
+                // in the case of a picture, the file is set to the .png type
+                if(calendar.get(Calendar.AM_PM) == 0) fileName += "_AM.png";
+                else fileName += "_PM.png";
+
+                // specifies the directory for the videos
+                File pictureDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + "/Grit_Pictures");
+                // if the directory doesn't exist on the device, create it
+                if(!pictureDirectory.exists()) pictureDirectory.mkdirs();
+
+                // saves the picture to the user's device
+                File pictureFile =
+                        new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS
+                                + "/Grit_Pictures").getAbsolutePath()
+                                + fileName);
+
+                // declares a new camera intent to capture a photo
+                Intent pictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+                // gets the Uri of the file
+                pictureSubmissionUri = Uri.fromFile(pictureFile);
+                //Uri pictureUri = Uri.fromFile(pictureFile);
+
+                // pass the Uri of the video to the intent
+                pictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureSubmissionUri);
+
+                // starts the camera intent that captures video
+                startActivityForResult(pictureIntent, 1);
+
+                break;
+
+            case R.id.videoButton:
+
+                // in the case of a video, the file is set to the .mp4 type
+                if(calendar.get(Calendar.AM_PM) == 0) fileName += "_AM.mp4";
+                else fileName += "_PM.mp4";
+
+                // specifies the directory for the videos
+                File videoDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + "/Grit_Videos");
+                // if the directory doesn't exist on the device, create it
+                if(!videoDirectory.exists()) videoDirectory.mkdirs();
+
+                // saves the video to the user's device
+                File videoFile =
+                        new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS
+                                + "/Grit_Videos").getAbsolutePath()
+                                + fileName);
+
+                // declares a new camera intent to capture video
+                Intent videoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+
+                // gets the Uri of the file
+                Uri videoUri = Uri.fromFile(videoFile);
+
+                // pass the Uri of the video to the intent
+                videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, videoUri);
+
+                // 10 MB size limit
+                videoIntent.putExtra(MediaStore.EXTRA_SIZE_LIMIT, 10485760L);
+
+                // starts the camera intent that captures video
+                startActivityForResult(videoIntent, 2);
+
+                break;
+        }
     }
 
     // method for handling the results of capturing a picture or a video
@@ -224,81 +276,56 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         // if the action was to capture a picture, then store all relevant data in the database
         if (requestCode == 1 && resultCode == RESULT_OK) {
 
+            // creates a new dialog box
+            Dialog dialog = new Dialog(this);
+            dialog.setContentView(R.layout.imagesubmission);
+            dialog.setCanceledOnTouchOutside(true);
+            dialog.show();
 
-            Toast.makeText(this, "Picture Received", Toast.LENGTH_SHORT).show();
+            // gets rid of the dim that is enabled by default
+            dialog.getWindow().setDimAmount(0.0f);
+
+            // sets up the image from xml file
+            ImageView image = (ImageView) dialog.findViewById(R.id.imageSubmissionView);
+            image.setImageURI(pictureSubmissionUri);
         }
 
         // if the method was to capture a video, then store all relevant data in the database
         if (requestCode == 2 && resultCode == RESULT_OK) {
 
+            // creates a new dialog box
+            Dialog dialog = new Dialog(this);
+            dialog.setContentView(R.layout.videosubmission);
+            dialog.setCanceledOnTouchOutside(true);
+            dialog.show();
 
-            Toast.makeText(this, "Video Received", Toast.LENGTH_SHORT).show();
+            // gets rid of the dim that is enabled by default
+            dialog.getWindow().setDimAmount(0.0f);
+
+            // sets up the videoview from xml file
+            VideoView video = (VideoView) dialog.findViewById(R.id.videoSubmissionView);
+            video.setVideoURI(data.getData());
+            video.start();
+
+            // upon the video being ready to play, the media player will declare to keep
+            // looping the video
+            video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    mp.setLooping(true);
+                }
+            });
         }
     }
 
-    @Override
-    public void onClick(View v) {
-
-        // this chunk of code names the file based on the current date and time
+    // this method uses the calendar to create a unique filename
+    public String createUniqueFileName() {
         calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR);
-        if(hour == 0) {
-            hour = 12;
-        }
-        String fileName = String.valueOf((calendar.get(Calendar.MONTH) + 1) + ":" +
-                calendar.get(Calendar.DATE) + ":" + calendar.get(Calendar.YEAR) + "_" +
-                hour + ":" + calendar.get(Calendar.MINUTE));
-
-        switch (v.getId()) {
-            // if the user clicked the picture button, open the camera and capture a picture
-            case R.id.pictureButton:
-
-                // camera intent
-                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                intent = "picture";
-
-                // specifies the directory for the pictures
-                File pictureDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/Grit_Pictures");
-
-                // if the directory doesn't exist on the device, add it
-                if(!pictureDirectory.exists()) pictureDirectory.mkdirs();
-
-                if(calendar.get(Calendar.AM_PM) == 0){fileName += "_AM.png";}
-                else{fileName += "_PM.png";}
-
-
-                // the name of the picture will be the time since epoch in milliseconds
-                //String pictureName = String.valueOf(System.currentTimeMillis() + ".png");
-                File capturedPicture = new File(pictureDirectory, fileName);
-                pictureUri = Uri.fromFile(capturedPicture);
-                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureUri);
-                startActivityForResult(cameraIntent, 1);
-                break;
-
-
-            // if the user clicked video, open the recorder and capture a video
-            case R.id.videoButton:
-                // camera intent
-                Intent videoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                intent = "video";
-
-                // specifies the directory for the pictures
-                File videoDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/Grit_Videos");
-
-                // if the directory doesn't exist on the device, add it
-                if(!videoDirectory.exists()) videoDirectory.mkdirs();
-
-                if(calendar.get(Calendar.AM_PM) == 0){fileName += "_AM.mp4";}
-                else{fileName += "_PM.mp4";}
-
-                File capturedVideo = new File(videoDirectory, fileName);
-                //videoUri = Uri.fromFile(capturedVideo);
-                videoUri = Uri.parse(videoDirectory + "/" + fileName);
-                videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, videoUri);
-                videoIntent.putExtra(MediaStore.EXTRA_SIZE_LIMIT, 10000000);
-                startActivityForResult(videoIntent, 2);
-                break;
-        }
+        if(hour == 0) hour = 12;
+        return String.valueOf("/" + (calendar.get(Calendar.MONTH) + 1) + "_" +
+                calendar.get(Calendar.DATE) + "_" + calendar.get(Calendar.YEAR) + "___" + hour +
+                "_" + calendar.get(Calendar.MINUTE) + "_" + calendar.get(Calendar.SECOND));
     }
 
     // updates the user's location
@@ -337,33 +364,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-        layoutInflator = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-        ViewGroup container = null;
-
-        if(intent.equals("picture")){
-            container = (ViewGroup) layoutInflator.inflate(R.layout.imagecontainer, null);
-            ImageView image = (ImageView) container.findViewById(R.id.imageView);
-            image.setImageURI(pictureUri);
-        }
-        else if(intent.equals("video")){
-
-            container = (ViewGroup) layoutInflator.inflate(R.layout.videocontainer, null);
-            VideoView video = (VideoView) container.findViewById(R.id.videoView);
-
-            video.setMediaController(new MediaController(this));
-
-            video.setVideoURI(videoUri);
-            video.start();
-
-            video.requestFocus();
-        }
-
-        popUpWindow = new PopupWindow(container, 800, 1220, true);
-        popUpWindow.setBackgroundDrawable(new BitmapDrawable());
-        popUpWindow.setOutsideTouchable(true);
-        popUpWindow.showAtLocation(relativeLayout, Gravity.CENTER, Gravity.CENTER_HORIZONTAL, Gravity.CENTER_VERTICAL);
-
-        return false;
+        return true;
     }
 
     private class UpdateLocation extends AsyncTask<String, Integer, String> {
@@ -388,8 +389,6 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -411,4 +410,3 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         lm.removeUpdates(location);
     }
 }
-
