@@ -59,9 +59,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     MyLocationListener location;
     LocationManager lm;
 
-    JSONObject post1 = null;
-
-    Uri pictureSubmissionUri = null;
+    Uri pictureSubmissionUri, videoSubmissionUri = null;
 
     private LatLng currentLocation, lastUpdatedLocation = null;
 
@@ -69,7 +67,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
     Calendar calendar;
 
-    EditText pictureText;
+    EditText pictureText, videoText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -264,6 +262,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
                 // gets the Uri of the file
                 Uri videoUri = Uri.fromFile(videoFile);
+                videoSubmissionUri = videoUri;
 
                 // pass the Uri of the video to the intent
                 videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, videoUri);
@@ -300,7 +299,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
             image.setImageURI(pictureSubmissionUri);
 
             final String timeStamp = String.valueOf(System.currentTimeMillis());
-            /*final EditText*/ pictureText = (EditText) dialog.findViewById(R.id.editTextPicture);
+            pictureText = (EditText) dialog.findViewById(R.id.editTextPicture);
             Button pictureSubmit = (Button) dialog.findViewById(R.id.pictureSubmitButton);
 
             // click listener for the submit button
@@ -329,7 +328,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         if (requestCode == 2 && resultCode == RESULT_OK) {
 
             // creates a new dialog box
-            Dialog dialog = new Dialog(this);
+            final Dialog dialog = new Dialog(this);
             dialog.setContentView(R.layout.videosubmission);
             dialog.setCanceledOnTouchOutside(true);
             dialog.getWindow().setLayout(800, 1220);
@@ -349,6 +348,31 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     mp.setLooping(true);
+                }
+            });
+
+            final String timeStamp = String.valueOf(System.currentTimeMillis());
+            videoText = (EditText) dialog.findViewById(R.id.editTextVideo);
+            Button pictureSubmit = (Button) dialog.findViewById(R.id.videoSubmitButton);
+
+            // click listener for the submit button
+            pictureSubmit.setOnClickListener(this);
+            pictureSubmit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+
+                    // adds a marker for the new post
+                    googleMap.addMarker(new MarkerOptions()
+                            .position(location.getLatLong())
+                            .title(String.valueOf("Video"))
+                            .snippet(timeStamp)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+
+                    // create object and push it to the database
+                    // time since epoch
+                    // media file
+                    // description of media file
                 }
             });
         }
@@ -419,7 +443,37 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
             TextView text = (TextView) dialog.findViewById(R.id.viewPictureText);
             text.setText(pictureText.getText().toString());
-            }
+        }
+        // if the user has clicked a marker containing a picture
+        else if (String.valueOf(marker.getTitle()).equals(String.valueOf("Video"))){
+
+            // creates a new dialog box
+            final Dialog dialog = new Dialog(this);
+            dialog.setContentView(R.layout.viewvideopost);
+            dialog.setCanceledOnTouchOutside(true);
+            dialog.getWindow().setLayout(800, 1220);
+            dialog.show();
+
+            // gets rid of the dim that is enabled by default
+            dialog.getWindow().setDimAmount(0.0f);
+
+            // sets up the image from xml file
+            VideoView video = (VideoView) dialog.findViewById(R.id.viewVideoPost);
+            video.setVideoURI(videoSubmissionUri);
+            video.start();
+
+            // upon the video being ready to play, the media player will declare to keep
+            // looping the video
+            video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    mp.setLooping(true);
+                }
+            });
+
+            TextView text = (TextView) dialog.findViewById(R.id.viewVideoText);
+            text.setText(videoText.getText().toString());
+        }
 
         return true;
     }

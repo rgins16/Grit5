@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/viewImagePost"
         android:layout_gravity="top|center_horizontal"
-        android:layout_weight=".80"/>
+        android:layout_weight=".95"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -18,5 +18,5 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:layout_gravity="center_horizontal"
         android:layout_below="@+id/viewImagePost"
-        android:layout_weight=".2" />
+        android:layout_weight=".05" />
 </LinearLayout>

@@ -4,12 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
+    <VideoView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/viewVideoPost"
         android:layout_gravity="top|center_horizontal"
-        android:layout_weight=".80"/>
+        android:layout_weight=".85" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -18,5 +18,5 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:layout_gravity="center_horizontal"
         android:layout_below="@+id/viewVideoPost"
-        android:layout_weight=".2" />
+        android:layout_weight=".15" />
 </LinearLayout>
