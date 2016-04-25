@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -31,6 +32,9 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.Calendar;
@@ -55,6 +59,8 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     MyLocationListener location;
     LocationManager lm;
 
+    JSONObject post1 = null;
+
     Uri pictureSubmissionUri = null;
 
     private LatLng currentLocation, lastUpdatedLocation = null;
@@ -62,6 +68,8 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     private Marker currentLocationMarker = null;
 
     Calendar calendar;
+
+    EditText pictureText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -292,7 +300,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
             image.setImageURI(pictureSubmissionUri);
 
             final String timeStamp = String.valueOf(System.currentTimeMillis());
-            EditText pictureText = (EditText) dialog.findViewById(R.id.editTextPicture);
+            /*final EditText*/ pictureText = (EditText) dialog.findViewById(R.id.editTextPicture);
             Button pictureSubmit = (Button) dialog.findViewById(R.id.pictureSubmitButton);
 
             // click listener for the submit button
@@ -305,6 +313,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                     // adds a marker for the new post
                     googleMap.addMarker(new MarkerOptions()
                             .position(location.getLatLong())
+                            .title(String.valueOf("Picture"))
                             .snippet(timeStamp)
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
 
@@ -391,7 +400,26 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-        //Log.d("Snippet", marker.getSnippet());
+        // if the user has clicked a marker containing a picture
+        if (String.valueOf(marker.getTitle()).equals(String.valueOf("Picture"))){
+
+            // creates a new dialog box
+            final Dialog dialog = new Dialog(this);
+            dialog.setContentView(R.layout.viewimagepost);
+            dialog.setCanceledOnTouchOutside(true);
+            dialog.getWindow().setLayout(800, 1220);
+            dialog.show();
+
+            // gets rid of the dim that is enabled by default
+            dialog.getWindow().setDimAmount(0.0f);
+
+            // sets up the image from xml file
+            ImageView image = (ImageView) dialog.findViewById(R.id.viewImagePost);
+            image.setImageURI(pictureSubmissionUri);
+
+            TextView text = (TextView) dialog.findViewById(R.id.viewPictureText);
+            text.setText(pictureText.getText().toString());
+            }
 
         return true;
     }
