@@ -61,13 +61,13 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
     Uri pictureSubmissionUri, videoSubmissionUri = null;
 
-    private LatLng currentLocation, lastUpdatedLocation = null;
-
-    private Marker currentLocationMarker = null;
+    private LatLng userLocation = null;
 
     Calendar calendar;
 
     EditText pictureText, videoText;
+
+    UpdateUserLocation updateUserLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,23 +113,11 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         configureMapSettings();
 
         //zoomHandler.post(MoniterZoom);
-        updateLocationHandler.post(UpdateCurrentLocation);
+
+        // start asynctask that constantly updates the user's location
+        updateUserLocation = new UpdateUserLocation();
+        updateUserLocation.execute();
     }
-
-    // this is the handler that gets the current location
-    Runnable UpdateCurrentLocation = new Runnable() {
-        @Override
-        public void run() {
-
-            // this handler will use an asynctask to get the current location
-            UpdateLocation updateLocation = new UpdateLocation();
-            updateLocation.execute();
-
-            // the handler will run again every 3 seconds
-            // therefore, the user's current location will be updated every 3 seconds
-            updateLocationHandler.postDelayed(UpdateCurrentLocation, 3000);
-        }
-    };
 
     // this is the handler that constantly moniters the map to make sure the user doesn't
     // scroll/zoom away from UMBC
@@ -309,17 +297,27 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                 public void onClick(View v) {
                     dialog.dismiss();
 
-                    // adds a marker for the new post
-                    googleMap.addMarker(new MarkerOptions()
-                            .position(location.getLatLong())
-                            .title(String.valueOf("Picture"))
-                            .snippet(timeStamp)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                    // if the user's location via gps can not currently be determined
+                    // then do not create the post
+                    // cancel, and alert the user
+                    if(userLocation != null){
 
-                    // create object and push it to the database
-                    // time since epoch
-                    // media file
-                    // description of media file
+                        // adds a marker for the new post
+                        googleMap.addMarker(new MarkerOptions()
+                                .position(location.getLatLong())
+                                .title(String.valueOf("Picture"))
+                                .snippet(timeStamp)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+                        // create object and push it to the database
+                        // time since epoch
+                        // media file
+                        // description of media file
+                    }
+                    //
+                    else{
+                        Toast.makeText(getApplicationContext(), "No connection to GPS", Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
         }
@@ -362,17 +360,27 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                 public void onClick(View v) {
                     dialog.dismiss();
 
-                    // adds a marker for the new post
-                    googleMap.addMarker(new MarkerOptions()
-                            .position(location.getLatLong())
-                            .title(String.valueOf("Video"))
-                            .snippet(timeStamp)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    // if the user's location via gps can not currently be determined
+                    // then do not create the post
+                    // cancel, and alert the user
+                    if(userLocation != null){
 
-                    // create object and push it to the database
-                    // time since epoch
-                    // media file
-                    // description of media file
+                        // adds a marker for the new post
+                        googleMap.addMarker(new MarkerOptions()
+                                .position(userLocation)
+                                .title(String.valueOf("Video"))
+                                .snippet(timeStamp)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+
+                        // create object and push it to the database
+                        // time since epoch
+                        // media file
+                        // description of media file
+                    }
+                    //
+                    else{
+                        Toast.makeText(getApplicationContext(), "No connection to GPS", Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
         }
@@ -386,39 +394,6 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         return String.valueOf("/" + (calendar.get(Calendar.MONTH) + 1) + "_" +
                 calendar.get(Calendar.DATE) + "_" + calendar.get(Calendar.YEAR) + "___" + hour +
                 "_" + calendar.get(Calendar.MINUTE) + "_" + calendar.get(Calendar.SECOND));
-    }
-
-    // updates the user's location
-    public void updateUserLocation() {
-
-        LatLng newestLocation = currentLocation;
-
-        // the very first time the method is called, add the user's current location
-        // to the map as a blue marker, and zoom to it
-        if (currentLocationMarker == null) {
-
-            // update the marker for the user's new location
-            currentLocationMarker = googleMap.addMarker(new MarkerOptions()
-                    .position(newestLocation)
-                    .icon(BitmapDescriptorFactory.
-                            defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-        } else {
-            // if the user's location has changed
-            if (!newestLocation.equals(lastUpdatedLocation)) {
-
-                // remove the current user's location marker
-                currentLocationMarker.remove();
-
-                // update the marker for the user's new location
-                currentLocationMarker = googleMap.addMarker(new MarkerOptions()
-                        .position(newestLocation)
-                        .icon(BitmapDescriptorFactory
-                                .defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-
-                // update the user's location
-                lastUpdatedLocation = newestLocation;
-            }
-        }
     }
 
     @Override
@@ -478,25 +453,20 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         return true;
     }
 
-    private class UpdateLocation extends AsyncTask<String, Integer, String> {
+    private class UpdateUserLocation extends AsyncTask<String, Integer, String> {
 
         @Override
-        protected String doInBackground(String... params) {
-
-            while (location.getLatLong() == null) {
-                // do nothing and wait until there is a location
-            }
-            return null;
-        }
+        protected String doInBackground(String... params) {return null;}
 
         @Override
         protected void onPostExecute(String result) {
 
             // updates the user's current location
-            currentLocation = location.getLatLong();
+            userLocation = location.getLatLong();
 
-            // calls the function to change the marker for the user's location
-            //updateUserLocation();
+            // make the async task repeat itself so it can keep updating the user's location
+            updateUserLocation = new UpdateUserLocation();
+            updateUserLocation.execute();
         }
     }
 
@@ -504,7 +474,6 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     protected void onDestroy() {
         super.onDestroy();
         zoomHandler.removeCallbacks(MoniterZoom);
-        updateLocationHandler.removeCallbacks(UpdateCurrentLocation);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,

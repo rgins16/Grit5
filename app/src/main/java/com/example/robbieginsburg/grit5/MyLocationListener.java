@@ -18,12 +18,11 @@ public class MyLocationListener implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
 
-        latLong = null;
-
         try {
             latLong = new LatLng(location.getLatitude(), location.getLongitude());
         }
         catch (Exception e) {
+            latLong = null;
         }
     }
 
