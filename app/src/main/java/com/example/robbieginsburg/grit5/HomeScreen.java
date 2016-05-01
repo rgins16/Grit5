@@ -31,6 +31,11 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // disables the title showing the name of the app
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+
+
         maps = (Button) findViewById(R.id.mapsButton);
         maps.setOnClickListener(this);
 
@@ -67,7 +72,7 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
         }
     }
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_button, menu);
@@ -87,7 +92,7 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
         }
 
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
