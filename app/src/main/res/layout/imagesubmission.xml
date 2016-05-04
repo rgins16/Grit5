@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageSubmissionView"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_weight=".85"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textViewPicture"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/imageSubmissionView"
+        android:layout_weight=".05"
+        android:text="Say something about your picture!" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editTextPicture"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/textViewPicture"
+        android:layout_weight=".05"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/pictureSubmitButton"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/editTextPicture"
+        android:layout_weight=".05"
+        android:text="Submit" />
+</LinearLayout>

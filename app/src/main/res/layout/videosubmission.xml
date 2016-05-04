@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <VideoView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/videoSubmissionView"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_weight=".85"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textViewVideo"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/videoSubmissionView"
+        android:layout_weight=".05"
+        android:text="Say something about your video!" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editTextVideo"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/textViewVideo"
+        android:layout_weight=".05"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/videoSubmitButton"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/editTextVideo"
+        android:layout_weight=".05"
+        android:text="Submit" />
+</LinearLayout>
