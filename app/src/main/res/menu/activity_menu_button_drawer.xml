@@ -13,11 +13,11 @@
         <item
             android:id="@+id/nav_mapSocial"
             android:icon="@drawable/ic_menu_slideshow"
-            android:title="Social" />
+            android:title="Social Map" />
         <item
             android:id="@+id/nav_mapsInfo"
             android:icon="@drawable/ic_menu_manage"
-            android:title="Information" />
+            android:title="Info Map" />
         <item
             android:id="@+id/nav_phoneBook"
             android:icon="@drawable/ic_menu_manage"

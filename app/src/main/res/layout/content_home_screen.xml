@@ -59,7 +59,21 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/layout4"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:layout_weight="1">
+
+        <Button
+            android:id="@+id/mapsInfoButton"
+            android:drawableLeft="@drawable/maps"
+            android:paddingLeft="75dp"
+            android:layout_width="300dp"
+            android:layout_height="150dp"
+            android:background="@drawable/button"/>
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
