@@ -83,7 +83,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     private boolean bool = false;
     private double currentLatitude, currentLongitude = 0.0;
 
-    private Button picture, video;
+    private Button picture, video, addMedia;
 
     private MyLocationListener location;
     private LocationManager lm;
@@ -141,9 +141,11 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
         picture = (Button) findViewById(R.id.pictureButton);
         video = (Button) findViewById(R.id.videoButton);
+        addMedia = (Button) findViewById(R.id.mediaButton);
 
         picture.setOnClickListener(this);
         video.setOnClickListener(this);
+        addMedia.setOnClickListener(this);
 
         lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         location = new MyLocationListener();
@@ -305,6 +307,14 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
                 // starts the camera intent that captures video
                 startActivityForResult(videoIntent, 2);
+
+                break;
+
+            case R.id.mediaButton:
+
+                // starts the activity that add the media to the database
+                Intent addMedia = new Intent(this, AddMedia.class);
+                startActivity(addMedia);
 
                 break;
         }

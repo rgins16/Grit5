@@ -12,4 +12,5 @@
     <string name="title_activity_phone_book">PhoneBook</string>
     <string name="title_activity_info_maps">InfoMaps</string>
     <string name="title_activity_up_coming">UpComing</string>
+    <string name="title_activity_add_media">AddMedia</string>
 </resources>

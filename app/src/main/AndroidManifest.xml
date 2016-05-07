@@ -37,28 +37,31 @@
             android:value="@string/google_maps_key" />
 
         <activity android:name=".EventsActivity" />
-
-        <activity android:name=".HomeScreen" >
+        <activity android:name=".HomeScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity android:name=".ChooseEvent" />
-
         <activity android:name=".UMBCLogIn">
-            <!--<intent-filter>
+
+            <!--
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
+            </intent-filter>
+            -->
         </activity>
-
         <activity android:name=".PhoneBook" />
         <activity android:name=".InfoMaps" />
         <activity android:name=".UpComing" />
+        <activity
+            android:name=".AddMedia"
+            android:label="@string/title_activity_add_media"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>
