@@ -29,10 +29,10 @@ public class ChooseEvent extends AppCompatActivity implements View.OnClickListen
         // disables the title showing the name of the app
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        upComingButton = (Button) findViewById(R.id.upComing);
+        upComingButton = (Button) findViewById(R.id.upComingButton);
         upComingButton.setOnClickListener(this);
 
-        happeningNowButton = (Button) findViewById(R.id.happeningNow);
+        happeningNowButton = (Button) findViewById(R.id.happeningNowButton);
         happeningNowButton.setOnClickListener(this);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -55,10 +55,12 @@ public class ChooseEvent extends AppCompatActivity implements View.OnClickListen
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.upComing:
+            case R.id.upComingButton:
                 //startActivity(upComing);
-            case R.id.happeningNow:
+                break;
+            case R.id.happeningNowButton:
                 startActivity(happeningNow);
+                break;
         }
     }
 
@@ -82,16 +84,17 @@ public class ChooseEvent extends AppCompatActivity implements View.OnClickListen
             //start the home screen activity
             startActivity(homeScreen);
         } else if (id == R.id.nav_events) {
-
+            //start the upcoming events activity
+            //startActivity(homeScreen);
         } else if (id == R.id.nav_mapSocial) {
-            // start the social map activity
+            // start the happening now activity
             startActivity(happeningNow);
-            startActivity(happeningNow);
-
         } else if (id == R.id.nav_mapsInfo) {
-
+            //start the info map activity
+            //startActivity(infoMaps);
         } else if (id == R.id.nav_phoneBook) {
-
+            //start the phone book activity
+            //startActivity(phoneBook);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
