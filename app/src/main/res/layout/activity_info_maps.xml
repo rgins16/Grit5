@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    tools:context="com.example.robbieginsburg.grit5.MenuButton"
     android:orientation="vertical">
 
     <android.support.design.widget.AppBarLayout
@@ -23,7 +24,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Happening Now"
+                android:text="Info Map"
                 android:layout_gravity="right"
                 android:textSize="20dp"
                 android:textStyle="bold"
@@ -44,7 +45,7 @@
         android:fitsSystemWindows="true"
         tools:openDrawer="start">
 
-        <include layout="@layout/content_events" />
+        <include layout="@layout/content_info_maps" />
 
         <android.support.design.widget.NavigationView
             android:id="@+id/nav_view"

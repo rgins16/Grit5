@@ -8,4 +8,8 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="google_app_id">eng-lightning-128523</string>
     <string name="title_activity_choose_event">ChooseEvent</string>
+    <string name="title_activity_umbclog_in">UMBCLogInActivity</string>
+    <string name="title_activity_phone_book">PhoneBook</string>
+    <string name="title_activity_info_maps">InfoMaps</string>
+    <string name="title_activity_up_coming">UpComing</string>
 </resources>

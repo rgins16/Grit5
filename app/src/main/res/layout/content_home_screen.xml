@@ -36,7 +36,7 @@
         <Button
             android:id="@+id/eventsButton"
             android:drawableLeft="@drawable/events"
-            android:paddingLeft="75dp"
+            android:paddingLeft="50dp"
             android:layout_width="300dp"
             android:layout_height="150dp"
             android:background="@drawable/button"/>
@@ -52,7 +52,7 @@
         <Button
             android:id="@+id/mapsButton"
             android:drawableLeft="@drawable/maps"
-            android:paddingLeft="75dp"
+            android:paddingLeft="50dp"
             android:layout_width="300dp"
             android:layout_height="150dp"
             android:background="@drawable/button"/>
@@ -67,7 +67,7 @@
         <Button
             android:id="@+id/phonebookButton"
             android:drawableLeft="@drawable/phone"
-            android:paddingLeft="75dp"
+            android:paddingLeft="50dp"
             android:layout_width="300dp"
             android:layout_height="150dp"
             android:background="@drawable/button"/>

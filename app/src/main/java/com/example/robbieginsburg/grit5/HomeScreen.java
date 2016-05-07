@@ -20,8 +20,8 @@ import java.util.Calendar;
 
 public class HomeScreen extends AppCompatActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
 
-    private Button eventsButton;
-    Intent homeScreen, events, socialMap, infoMap, phoneBook;
+    private Button eventsButton, mapsButton, phonebookButton;
+    Intent homeScreen, upComing, happeningNow, infoMap, phoneBook;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +37,12 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
         eventsButton = (Button) findViewById(R.id.eventsButton);
         eventsButton.setOnClickListener(this);
 
+        mapsButton = (Button) findViewById(R.id.mapsButton);
+        mapsButton.setOnClickListener(this);
+
+        phonebookButton = (Button) findViewById(R.id.phonebookButton);
+        phonebookButton.setOnClickListener(this);
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -48,19 +54,25 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
 
         // sets all the intents for if a user clicks one of the buttons in the navbar
         homeScreen = new Intent(this, HomeScreen.class);
-        //events = new Intent(this, .class);
-        socialMap = new Intent(this, EventsActivity.class);
-        //infoMap = new Intent(this, .class);
-        //phoneBook = new Intent(this, .class);
+        upComing = new Intent(this, UpComing.class);
+        happeningNow = new Intent(this, EventsActivity.class);
+        infoMap = new Intent(this, InfoMaps.class);
+        phoneBook = new Intent(this, PhoneBook.class);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            // if the user clicked the events button, open the events map UI
             case R.id.eventsButton:
                 Intent intent = new Intent(this, ChooseEvent.class);
                 startActivity(intent);
+                break;
+            case R.id.mapsButton:
+                startActivity(infoMap);
+                break;
+            case R.id.phonebookButton:
+                startActivity(phoneBook);
+                break;
         }
     }
 
@@ -74,8 +86,6 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
         }
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
@@ -83,16 +93,22 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
         if (id == R.id.nav_home) {
             //start the home screen activity
             startActivity(homeScreen);
+
         } else if (id == R.id.nav_events) {
+            //start the upcoming events activity
+            startActivity(upComing);
 
         } else if (id == R.id.nav_mapSocial) {
-            // start the social map activity
-            startActivity(socialMap);
+            // start the happening now activity
+            startActivity(happeningNow);
 
         } else if (id == R.id.nav_mapsInfo) {
+            //start the info map activity
+            startActivity(infoMap);
 
         } else if (id == R.id.nav_phoneBook) {
-
+            //start the phone book activity
+            startActivity(phoneBook);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

@@ -2,38 +2,27 @@ package com.example.robbieginsburg.grit5;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 
-public class ChooseEvent extends AppCompatActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener{
+public class InfoMaps extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
-    private Button upComingButton, happeningNowButton;
     Intent homeScreen, upComing, happeningNow, infoMap, phoneBook;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_choose_event);
+        setContentView(R.layout.activity_info_maps);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // disables the title showing the name of the app
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-
-        upComingButton = (Button) findViewById(R.id.upComingButton);
-        upComingButton.setOnClickListener(this);
-
-        happeningNowButton = (Button) findViewById(R.id.happeningNowButton);
-        happeningNowButton.setOnClickListener(this);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -50,18 +39,6 @@ public class ChooseEvent extends AppCompatActivity implements View.OnClickListen
         happeningNow = new Intent(this, EventsActivity.class);
         infoMap = new Intent(this, InfoMaps.class);
         phoneBook = new Intent(this, PhoneBook.class);
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.upComingButton:
-                startActivity(upComing);
-                break;
-            case R.id.happeningNowButton:
-                startActivity(happeningNow);
-                break;
-        }
     }
 
     @Override
