@@ -34,8 +34,8 @@
         android:layout_weight="1">
 
         <Button
-            android:id="@+id/eventsButton"
-            android:drawableLeft="@drawable/events"
+            android:id="@+id/upComing"
+            android:drawableLeft="@drawable/upcoming"
             android:paddingLeft="75dp"
             android:layout_width="300dp"
             android:layout_height="150dp"
@@ -50,23 +50,8 @@
         android:layout_weight="1">
 
         <Button
-            android:id="@+id/mapsButton"
-            android:drawableLeft="@drawable/maps"
-            android:paddingLeft="75dp"
-            android:layout_width="300dp"
-            android:layout_height="150dp"
-            android:background="@drawable/button"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:layout_weight="1">
-
-        <Button
-            android:id="@+id/phonebookButton"
-            android:drawableLeft="@drawable/phone"
+            android:id="@+id/happeningNow"
+            android:drawableLeft="@drawable/happeningnow"
             android:paddingLeft="75dp"
             android:layout_width="300dp"
             android:layout_height="150dp"

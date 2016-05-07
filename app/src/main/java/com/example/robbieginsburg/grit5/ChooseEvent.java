@@ -10,32 +10,30 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.View;
-import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 
-import java.util.Calendar;
+public class ChooseEvent extends AppCompatActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener{
 
-public class HomeScreen extends AppCompatActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
-
-    private Button eventsButton;
-    Intent homeScreen, events, socialMap, infoMap, phoneBook;
+    private Button upComingButton, happeningNowButton;
+    Intent homeScreen, upComing, happeningNow, infoMap, phoneBook;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home_screen);
-
+        setContentView(R.layout.activity_choose_event);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // disables the title showing the name of the app
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        eventsButton = (Button) findViewById(R.id.eventsButton);
-        eventsButton.setOnClickListener(this);
+        upComingButton = (Button) findViewById(R.id.upComing);
+        upComingButton.setOnClickListener(this);
+
+        happeningNowButton = (Button) findViewById(R.id.happeningNow);
+        happeningNowButton.setOnClickListener(this);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -48,8 +46,8 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
 
         // sets all the intents for if a user clicks one of the buttons in the navbar
         homeScreen = new Intent(this, HomeScreen.class);
-        //events = new Intent(this, .class);
-        socialMap = new Intent(this, EventsActivity.class);
+        //upComing = new Intent(this, .class);
+        happeningNow = new Intent(this, EventsActivity.class);
         //infoMap = new Intent(this, .class);
         //phoneBook = new Intent(this, .class);
     }
@@ -57,15 +55,15 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            // if the user clicked the events button, open the events map UI
-            case R.id.eventsButton:
-                Intent intent = new Intent(this, ChooseEvent.class);
-                startActivity(intent);
+            case R.id.upComing:
+                //startActivity(upComing);
+            case R.id.happeningNow:
+                startActivity(happeningNow);
         }
     }
 
     @Override
-     public void onBackPressed() {
+    public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
@@ -87,7 +85,8 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
 
         } else if (id == R.id.nav_mapSocial) {
             // start the social map activity
-            startActivity(socialMap);
+            startActivity(happeningNow);
+            startActivity(happeningNow);
 
         } else if (id == R.id.nav_mapsInfo) {
 
