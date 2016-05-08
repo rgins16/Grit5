@@ -1,0 +1,16 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.robbieginsburg.grit5.AddPicture">
+
+    <Button
+        android:id="@+id/capturePictureButton"
+        android:drawableLeft="@drawable/capturepicture"
+        android:paddingLeft="10dp"
+        android:layout_width="250dp"
+        android:layout_height="70dp"
+        android:background="@drawable/addmediabutton"
+        android:layout_centerInParent="true"/>
+
+</RelativeLayout>

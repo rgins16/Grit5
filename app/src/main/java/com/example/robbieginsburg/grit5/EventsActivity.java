@@ -90,6 +90,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
     private Uri saved_pictureUri;
     private long secsSinceEpoch;
+
     private String UMBC_username;
     private String current_content = null;
 
@@ -100,7 +101,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     private UpdateUserLocation updateUserLocation;
 
     //These prevent us from having to loop through the database
-    //  This maps title to marker
+    //  This maps uniqueID to marker
     private HashMap<String, Marker> markers;
     //  This maps title to uniqueID (Firebase)
     private HashMap<String, String> uniqueIDs;
@@ -150,6 +151,8 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         location = new MyLocationListener();
 
+        // ***************** pick the stringest signal gps/wifi
+
         try
         {
             lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, location);
@@ -168,10 +171,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         descriptions = new HashMap<>();
 
         Intent this_intent = getIntent();
-        if(this_intent != null)
-        {
-            UMBC_username = this_intent.getStringExtra("UMBC_email");
-        }
+        if(this_intent != null) UMBC_username = this_intent.getStringExtra("UMBC_email");
     }
 
     // this is the handler that constantly monitors the map to make sure the user doesn't
@@ -250,7 +250,9 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         //String fileName = createUniqueFileName();
 
         secsSinceEpoch = System.currentTimeMillis()/1000;
+
         String fileName = "" + secsSinceEpoch + "_" + UMBC_username;
+
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             //requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
@@ -272,6 +274,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
                 // gets the Uri of the file
                 Uri pictureSubmissionUri = Uri.fromFile(pictureFile);
+
                 //We have to save this because getting the Uri is unreliable from Camera for Pictures
                 saved_pictureUri = pictureSubmissionUri;
 
@@ -378,7 +381,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                             // description of media file
                             String desc = pictureText.getText().toString();
                             Content picture = new Content("Picture", location.getLatLong().longitude, location.getLatLong().latitude,
-                                    secsSinceEpoch, media, desc, UMBC_username); //The last 3 args will be meaningful eventually
+                                    secsSinceEpoch, media, desc, UMBC_username);
                             ref.push().setValue(picture);
                         }
                         catch (FileNotFoundException e)
@@ -457,8 +460,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                             media = Base64.encodeToString(bytes, Base64.DEFAULT);
                             // description of media file
                             String desc = videoText.getText().toString();
-                            Log.d("Pushing", "" + secsSinceEpoch);
-                            Log.d("Pushing", "" + videoUri.getPath().split("")[1]);
+
                             Content video = new Content("Video", location.getLatLong().longitude, location.getLatLong().latitude,
                                     secsSinceEpoch, media, desc, UMBC_username);
                             ref.push().setValue(video);
@@ -576,7 +578,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         {
             directory.mkdirs();
         }
-        // saves the picture to the user's device
+        // returns the place to save the file on the user's device
         return new File(directory.getAbsolutePath() + "/" + filename);
     }
 
@@ -674,6 +676,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                     });
 
                     TextView text = (TextView) dialog.findViewById(R.id.viewVideoText);
+                    // textview for umbc username
                     text.setText(descriptions.get(uniqueID));
                 }
                 else //Picture
@@ -716,19 +719,21 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
         //googleMap.addMarker(new MarkerOptions().position(UMBC));
         googleMap.setOnMarkerClickListener(this);
+
         Firebase.setAndroidContext(this);
         ref = new Firebase("https://gritapptest4112016.firebaseio.com").child("content");
+
         ref.addChildEventListener(
                 new ChildEventListener() {
                     //This is triggered for every existing element and every one
                     //  that is added
+                    // every time the app is loaded every object in the db will be written to a marker
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
                         String uniqueID = dataSnapshot.getKey();
                         Log.d("OnChildAdded", uniqueID);
                         Content c = dataSnapshot.getValue(Content.class);
-                        //Perhaps this should be posted to a Handler?
                         placeMarker(c, uniqueID);
                     }
 
