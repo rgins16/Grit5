@@ -406,64 +406,64 @@ public class InfoMaps extends AppCompatActivity implements GoogleMap.OnMarkerCli
         };
 
         if(marker.getTitle().equals(accService.getTitle())){
-            dialog.setContentView(R.layout.view_acc_service);
+            //dialog.setContentView(R.layout.view_acd_service);
         }
         else if(marker.getTitle().equals(admin.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(aokLib.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(commons.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(dHall.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(engineering.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(fineArts.getTitle())){
             dialog.setContentView(R.layout.view_fine_arts);
         }
         else if(marker.getTitle().equals(fM.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(greenHouse.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(ite.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(mathPsych.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(meyerhoff.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(pahb.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(physics.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(publicPolicy.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(rac.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(sherman.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(sondheim.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(trc.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            //dialog.setContentView(R.layout.viewvideopost);
         }
         else if(marker.getTitle().equals(uniCenter.getTitle())){
-            dialog.setContentView(R.layout.viewvideopost);
+            dialog.setContentView(R.layout.view_uni_center);
         }
 
         dialog.setCanceledOnTouchOutside(true);
