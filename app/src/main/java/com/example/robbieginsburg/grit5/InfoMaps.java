@@ -204,6 +204,8 @@ public class InfoMaps extends AppCompatActivity implements GoogleMap.OnMarkerCli
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+        Log.d("WWWWWWWWWWWWWW", "" + marker.getTitle());
+        if (marker.getTitle().substring(0,3).equals("aaa")) Log.d("GGGGGGGGGGGGGGG", "");
 
         return true;
     }
@@ -217,9 +219,11 @@ public class InfoMaps extends AppCompatActivity implements GoogleMap.OnMarkerCli
         LatLng UMBC = new LatLng(39.255462, -76.711110);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UMBC, 16));
 
-        googleMap.addMarker(new MarkerOptions().position(new LatLng(39.253466, -76.712760))); // Sondheim
-        googleMap.addMarker(new MarkerOptions().position(new LatLng(39.253855, -76.714265))); // ITE
-        googleMap.addMarker(new MarkerOptions().position(new LatLng(39.254569, -76.713965))); // Egineering
+        //googleMap.addMarker(new MarkerOptions().position(new LatLng(39.253466, -76.712760))); // Sondheim
+        //googleMap.addMarker(new MarkerOptions().position(new LatLng(39.253855, -76.714265))); // ITE
+        //googleMap.addMarker(new MarkerOptions().position(new LatLng(39.254569, -76.713965))); // Egineering
+
+        googleMap.addMarker(new MarkerOptions().title("aaa").position(new LatLng(39.253466, -76.712760)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
 
         googleMap.setOnMarkerClickListener(this);
 
