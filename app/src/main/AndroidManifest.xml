@@ -22,7 +22,8 @@
         android:icon="@drawable/paw3"
         android:label="Grit"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:largeHeap="true">
 
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.

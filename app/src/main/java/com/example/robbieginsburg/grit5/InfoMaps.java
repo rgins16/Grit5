@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Matrix;
+import android.graphics.PointF;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -24,8 +26,10 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
+import android.util.FloatMath;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -66,7 +70,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class InfoMaps extends AppCompatActivity implements GoogleMap.OnMarkerClickListener,
-        OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener {
+        GoogleMap.OnInfoWindowClickListener, NavigationView.OnNavigationItemSelectedListener {
 
     private GoogleMap googleMap;
     private Handler zoomHandler = new Handler();
@@ -84,9 +88,11 @@ public class InfoMaps extends AppCompatActivity implements GoogleMap.OnMarkerCli
     private MyLocationListener location;
     private LocationManager lm;
 
-    private LatLng userLocation = null;
-
     Intent homeScreen, upComing, happeningNow, infoMap, phoneBook;
+
+    Marker accService, admin, aokLib, bio, dHall, engineering, fineArts, fM, greenHouse, ite,
+            mathPsych, meyerhoff, pahb, physics, publicPolicy, rac, sherman, sondheim, commons,
+            trc, uniCenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,22 +121,37 @@ public class InfoMaps extends AppCompatActivity implements GoogleMap.OnMarkerCli
         phoneBook = new Intent(this, PhoneBook.class);
 
 
-        lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        googleMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.infoMapFragment))
+                .getMap();
+        googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+        googleMap.setOnMarkerClickListener(this);
+        googleMap.setOnInfoWindowClickListener(this);
+        configureMapSettings();
+
+        createMarkers();
+
+        // makes the map focus on UMBC
+        LatLng UMBC = new LatLng(39.255462, -76.711110);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UMBC, 16));
+
+        lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         location = new MyLocationListener();
 
-        // ***************** pick the strongest signal gps/wifi
-
-        try
-        {
-            lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, location);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
         }
-        catch(SecurityException e)
-        {
-            e.printStackTrace();
-        }
+        lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, location);
 
-        // creates the map object and enables satellite mode
-        ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.infoMapFragment)).getMapAsync(this);
+        zoomHandler.post(MoniterZoom);
     }
 
     // this is the handler that constantly monitors the map to make sure the user doesn't
@@ -203,36 +224,6 @@ public class InfoMaps extends AppCompatActivity implements GoogleMap.OnMarkerCli
     }
 
     @Override
-    public boolean onMarkerClick(Marker marker) {
-        Log.d("WWWWWWWWWWWWWW", "" + marker.getTitle());
-        if (marker.getTitle().substring(0,3).equals("aaa")) Log.d("GGGGGGGGGGGGGGG", "");
-
-        return true;
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap_) {
-        googleMap = googleMap_;
-        googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-
-        // makes the map focus on UMBC
-        LatLng UMBC = new LatLng(39.255462, -76.711110);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UMBC, 16));
-
-        //googleMap.addMarker(new MarkerOptions().position(new LatLng(39.253466, -76.712760))); // Sondheim
-        //googleMap.addMarker(new MarkerOptions().position(new LatLng(39.253855, -76.714265))); // ITE
-        //googleMap.addMarker(new MarkerOptions().position(new LatLng(39.254569, -76.713965))); // Egineering
-
-        googleMap.addMarker(new MarkerOptions().title("aaa").position(new LatLng(39.253466, -76.712760)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-
-        googleMap.setOnMarkerClickListener(this);
-
-        configureMapSettings();
-
-        zoomHandler.post(MoniterZoom);
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
 
@@ -293,5 +284,200 @@ public class InfoMaps extends AppCompatActivity implements GoogleMap.OnMarkerCli
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    // creates all the markers
+    public void createMarkers(){
+
+        accService = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.253954, -76.711055))
+                .title("Academic Services")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        admin = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.253039, -76.713515))
+                .title("Administration")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        aokLib = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.256625, -76.711336))
+                .title("A.O.K. Library")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        bio = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.254847, -76.712108))
+                .title("Biological Science")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        commons = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.255071, -76.710981))
+                .title("The Commons")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        dHall = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.255918, -76.707677))
+                .title("True Grits")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        engineering = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.254539, -76.713996))
+                .title("Engineering")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        fineArts = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.255133, -76.713458))
+                .title("Fine Arts")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        fM = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.252706, -76.704422))
+                .title("Facilities Management")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        greenHouse = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.258181, -76.713568))
+                .title("Green House")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        ite = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.253837, -76.714228))
+                .title("Information Technology/Engineering")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        mathPsych = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.254104, -76.712482))
+                .title("Math/Psychology")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        meyerhoff = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.254941, -76.712782))
+                .title("Meyerhoff Chemistry")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        pahb = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.255266, -76.715287))
+                .title("Performing Arts/Humanities")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        physics = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.254481, -76.709669))
+                .title("Physics")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        publicPolicy = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.255150, -76.709132))
+                .title("Public Policy")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        rac = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.252866, -76.712497))
+                .title("Retriever Activity Center")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        sherman = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.253593, -76.713191))
+                .title("Sherman Hall")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        sondheim = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.253466, -76.712760))
+                .title("Sondheim Hall")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        trc = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.254692, -76.702479))
+                .title("Technology Research Center")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+
+        uniCenter = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(39.254334, -76.713282))
+                .title("University Center")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+
+        final Dialog dialog = new Dialog(InfoMaps.this) {
+            @Override
+            public void dismiss() {
+                super.dismiss();
+            }
+        };
+
+        if(marker.getTitle().equals(accService.getTitle())){
+            dialog.setContentView(R.layout.view_acc_service);
+        }
+        else if(marker.getTitle().equals(admin.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(aokLib.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(commons.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(dHall.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(engineering.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(fineArts.getTitle())){
+            dialog.setContentView(R.layout.view_fine_arts);
+        }
+        else if(marker.getTitle().equals(fM.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(greenHouse.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(ite.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(mathPsych.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(meyerhoff.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(pahb.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(physics.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(publicPolicy.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(rac.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(sherman.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(sondheim.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(trc.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+        else if(marker.getTitle().equals(uniCenter.getTitle())){
+            dialog.setContentView(R.layout.viewvideopost);
+        }
+
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.getWindow().setLayout(1000, 1520);
+        dialog.show();
+
+        // gets rid of the dim that is enabled by default
+        dialog.getWindow().setDimAmount(0.0f);
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        marker.showInfoWindow();
+
+        return false;
     }
 }
