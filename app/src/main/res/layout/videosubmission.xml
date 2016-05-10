@@ -12,35 +12,17 @@
         android:layout_gravity="top|center_horizontal"
         android:layout_weight=".85"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textViewVideo"
-        android:layout_gravity="center_horizontal"
-        android:layout_below="@+id/videoSubmissionView"
-        android:layout_weight=".05"
-        android:text="Say something about your video!"
-        android:textColor="#ffc113"
-        android:textStyle="bold"/>
-
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/editTextVideo"
-        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:text="Say something about your video!"
         android:layout_below="@+id/textViewVideo"
         android:layout_weight=".05"
         android:textColor="#ffc113"
-        android:textStyle="bold"/>
-
-    <!--<Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/videoSubmitButton"
-        android:layout_gravity="center_horizontal"
-        android:layout_below="@+id/editTextVideo"
-        android:layout_weight=".05"
-        android:text="Submit" />-->
+        android:textStyle="bold"
+        android:layout_gravity="center" />
 
     <Button
         android:id="@+id/videoSubmitButton"

@@ -26,7 +26,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -289,6 +291,14 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                 image.setImageURI(content_Uri);
 
                 descriptionText = (EditText) dialog.findViewById(R.id.editTextPicture);
+                descriptionText.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        descriptionText.setText("");
+                        showSoftKeyboard(descriptionText);
+                        return false;
+                    }
+                });
                 submitButton = (Button) dialog.findViewById(R.id.pictureSubmitButton);
             }
             else    //This is a video
@@ -309,6 +319,15 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                 });
 
                 descriptionText = (EditText) dialog.findViewById(R.id.editTextVideo);
+                descriptionText.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        descriptionText.setText("");
+                        showSoftKeyboard(descriptionText);
+                        return false;
+                    }
+                });
+
                 submitButton = (Button) dialog.findViewById(R.id.videoSubmitButton);
             }
             dialog.setCanceledOnTouchOutside(true);
@@ -943,6 +962,14 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public void showSoftKeyboard(View view) {
+        if (view.requestFocus()) {
+            InputMethodManager imm = (InputMethodManager)
+                    getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+        }
     }
 
 }

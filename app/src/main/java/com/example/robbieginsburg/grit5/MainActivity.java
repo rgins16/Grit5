@@ -16,6 +16,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -69,7 +70,6 @@ public class MainActivity extends Activity {
                 showSoftKeyboard(userName);
                 return false;
             }
-
         });
 
         buttonLogIn = (Button)findViewById(R.id.logIn);
@@ -99,6 +99,7 @@ public class MainActivity extends Activity {
             imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
         }
     }
+
     @Override
     protected void onResume() {
         super.onResume();

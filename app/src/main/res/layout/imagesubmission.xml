@@ -12,35 +12,17 @@
         android:layout_gravity="top|center_horizontal"
         android:layout_weight=".85"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textViewPicture"
-        android:layout_gravity="center_horizontal"
-        android:layout_below="@+id/imageSubmissionView"
-        android:layout_weight=".05"
-        android:text="Say something about your picture!"
-        android:textColor="#ffc113"
-        android:textStyle="bold"/>
-
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/editTextPicture"
-        android:layout_gravity="center_horizontal"
-        android:layout_below="@+id/textViewPicture"
+        android:gravity="center"
+        android:text="Say something about your picture!"
+        android:layout_below="@+id/textViewVideo"
         android:layout_weight=".05"
         android:textColor="#ffc113"
-        android:textStyle="bold"/>
-
-    <!--<Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/pictureSubmitButton"
-        android:layout_gravity="center_horizontal"
-        android:layout_below="@+id/editTextPicture"
-        android:layout_weight=".05"
-        android:text="Submit" />-->
+        android:textStyle="bold"
+        android:layout_gravity="center" />
 
     <Button
         android:id="@+id/pictureSubmitButton"
@@ -50,7 +32,7 @@
         android:paddingLeft="14dp"
         android:layout_gravity="center_horizontal"
         android:layout_below="@+id/editTextPicture"
-        android:layout_weight=".05"
+        android:layout_weight=".01"
         android:background="@drawable/mediabutton"
         />
 </LinearLayout>

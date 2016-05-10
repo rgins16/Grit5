@@ -29,11 +29,14 @@
 
         <EditText
             android:id="@+id/userName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="500dp"
+            android:layout_height="100dp"
             android:layout_gravity="center"
-            android:textColor="#ffc113"
-            android:textStyle="bold" />
+            android:text="UMBC Username"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:background="@drawable/logininput"/>
     </LinearLayout>
 
     <LinearLayout
@@ -45,11 +48,11 @@
         <Button
             android:id="@+id/logIn"
             android:drawableLeft="@drawable/login"
-            android:paddingLeft="215dp"
+            android:paddingLeft="212dp"
             android:layout_width="500dp"
             android:layout_height="100dp"
             android:layout_gravity="center"
-            android:background="@drawable/button"/>
+            android:background="@drawable/loginbutton"/>
     </LinearLayout>
 
 </LinearLayout>
