@@ -175,6 +175,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         Intent this_intent = getIntent();
         if(this_intent != null) UMBC_username = this_intent.getStringExtra("UMBC_email");
 
+        // set this equal to the google username
         UMBC_username = "lmc3";
     }
 

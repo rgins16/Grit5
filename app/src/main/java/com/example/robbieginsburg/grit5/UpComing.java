@@ -1,21 +1,76 @@
 package com.example.robbieginsburg.grit5;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.CalendarContract;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.method.ScrollingMovementMethod;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-public class UpComing extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
+
+public class UpComing extends AppCompatActivity /*implements NavigationView.OnNavigationItemSelectedListener*/{
 
     Intent homeScreen, upComing, happeningNow, infoMap, phoneBook;
 
+    private static final String DEBUG_TAG = "HttpExample";
+    private TextView urlText;
+    private TextView textView;
+
+    ProgressDialog mProgress;
+    private ArrayList<String> listItems;
+    private ListView listView;
+    private ArrayAdapter<String> adapter;
+    private String today;
+
+    private String umbcId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_up_coming);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -24,7 +79,7 @@ public class UpComing extends AppCompatActivity implements NavigationView.OnNavi
         // disables the title showing the name of the app
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        /*DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -34,7 +89,7 @@ public class UpComing extends AppCompatActivity implements NavigationView.OnNavi
         navigationView.setNavigationItemSelectedListener(this);
 
         // enables me to put my custom images in the navbar
-        navigationView.setItemIconTintList(null);
+        navigationView.setItemIconTintList(null);*/
 
         // sets all the intents for if a user clicks one of the buttons in the navbar
         homeScreen = new Intent(this, HomeScreen.class);
@@ -42,9 +97,307 @@ public class UpComing extends AppCompatActivity implements NavigationView.OnNavi
         happeningNow = new Intent(this, EventsActivity.class);
         infoMap = new Intent(this, InfoMaps.class);
         phoneBook = new Intent(this, PhoneBook.class);
+
+
+        LinearLayout activityLayout = new LinearLayout(this);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        activityLayout.setLayoutParams(lp);
+        activityLayout.setOrientation(LinearLayout.VERTICAL);
+        activityLayout.setPadding(16, 16, 16, 16);
+
+        ViewGroup.LayoutParams tlp = new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+
+
+
+        Calendar cal = Calendar.getInstance();
+        int day = cal.get(Calendar.DAY_OF_MONTH);
+        int month = cal.get(Calendar.MONTH)+1;
+        int year = cal.get(Calendar.YEAR);
+
+        urlText = new TextView(this);
+        urlText.setLayoutParams(tlp);
+        urlText.setPadding(16, 16, 16, 16);
+        activityLayout.addView(urlText);
+
+        urlText.setText("http://my.umbc.edu/events/" + year + "/" + month + "/" + day);
+
+        today = ""+year+"-"+month+"-"+day;
+
+        textView = new TextView(this);
+        textView.setLayoutParams(tlp);
+        textView.setPadding(16, 16, 16, 16);
+        activityLayout.addView(textView);
+        textView.setText("");
+
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        int width = dm.widthPixels;
+        int height = dm.heightPixels;
+
+
+        listView = new ListView(this);
+        tlp.height = (int)(height * 0.7);
+        listView.setLayoutParams(tlp);
+        listView.setPadding(16, 16, 16, 16);
+        activityLayout.addView(listView);
+
+
+        Intent intent = getIntent();
+        umbcId = intent.getStringExtra("umbcId");
+
+        listItems=new ArrayList<String>();
+        adapter=new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_1,
+                listItems);
+        listView.setAdapter(adapter);
+
+        setContentView(activityLayout);
+
+        //textView.setText(date.toString());
+        String stringUrl = urlText.getText().toString();
+        urlText.setEnabled(false);
+
+        mProgress = new ProgressDialog(this);
+        mProgress.setMessage("Loading the events ...");
+
+
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            new DownloadWebpageTask().execute(stringUrl);
+        } else {
+            textView.setText("No network connection available.");
+        }
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                String item = ((TextView) view).getText().toString();
+                Intent intent = new Intent(UpComing.this, PopUpUmbcEvent.class);
+                intent.putExtra("item", item);
+                intent.putExtra("today", today);
+                startActivity(intent);
+
+            }
+        });
+
+
+        Button buttonMyCalendar = new Button(this);
+        buttonMyCalendar.setText("My Itinerary");
+        buttonMyCalendar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), MyCalendar.class);
+                //intent.putExtra("umbcId",umbcId);
+                startActivity(intent);
+            }
+        });
+        activityLayout.addView(buttonMyCalendar);
+
+        Button buttonGoBack = new Button(this);
+        buttonGoBack.setText("Back");
+        buttonGoBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        activityLayout.addView(buttonGoBack);
+
     }
 
-    @Override
+
+    public String processListItem(String eventItem){
+        String []fields = eventItem.split("\\|");
+        String newItem = "";
+                /*for (String field:fields){
+                    newItem += field;
+                }*/
+        String noon = "Noon";
+        if(fields[0].trim().equals(noon))
+            fields[0]="12:00 PM";
+        if(fields[1].trim().equals(noon))
+            fields[1]="12:00 PM";
+
+
+        if(!fields[0].trim().contains(":")){
+            fields[0] = fields[0].replace(" PM",":00 PM");
+            fields[0] = fields[0].replace(" AM",":00 AM");
+        }
+        if(!fields[1].trim().contains(":")){
+            fields[1] = fields[1].replace(" PM",":00 PM");
+            fields[1] = fields[1].replace(" AM",":00 AM");
+        }
+
+        newItem += "Title      : "+fields[5]+"\n";
+        newItem += "Starts at  : "+fields[0]+"\n";
+        newItem += "Ends at    : "+fields[1]+"\n";
+        newItem += "Location   : "+fields[2]+"\n";
+        newItem += "Description: "+fields[3]+"\n";
+        newItem += "Web Page   : "+fields[4]+"\n";
+        return newItem;
+    }
+
+
+    private class DownloadWebpageTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... urls) {
+
+            // params comes from the execute() call: params[0] is the url.
+            try {
+                return downloadUrl(urls[0]);
+            } catch (IOException e) {
+                return "Unable to retrieve web page. URL may be invalid.";
+            }
+        }
+
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgress.show();
+        }
+
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(String result) {
+            mProgress.hide();
+            textView.setText("The events happening today are:");
+            String []eventItems =  result.split("\n");
+            for (String eventItem: eventItems){
+                String newItem = processListItem(eventItem);
+                adapter.add(newItem);
+            }
+        }
+
+        // Given a URL, establishes an HttpUrlConnection and retrieves
+        // the web page content as a InputStream, which it returns as
+        // a string.
+        private String downloadUrl(String myurl) throws IOException {
+            InputStream is = null;
+            // Only display the first 500 characters of the retrieved
+            // web page content.
+            int len = 50000;
+
+            try {
+                URL url = new URL(myurl);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(20000 /* milliseconds */);
+                conn.setConnectTimeout(25000 /* milliseconds */);
+                conn.setRequestMethod("GET");
+                conn.setDoInput(true);
+                // Starts the query
+                conn.connect();
+                int response = conn.getResponseCode();
+                Log.d(DEBUG_TAG, "The response is: " + response);
+                is = conn.getInputStream();
+
+                // Convert the InputStream into a string
+                String contentAsString = readIt(is, len);
+                String result = parseXmlString(contentAsString);
+                return result;
+
+                // Makes sure that the InputStream is closed after the app is
+                // finished using it.
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
+            }
+        }
+
+        public String parseXmlString(String html){
+            //textView.setText(str);
+
+            html = html.replaceAll("event-item content-item", "event-item-content-item");
+            String hrefUrl = "http://my.umbc.edu/";
+            //String result="The events happening today are:";
+            String parsedString = "";
+
+            try {
+                Document doc = Jsoup.parse(html);
+                Elements elements = doc.getElementsByAttributeValue("class", "event-item-content-item");
+
+                for (Element element: elements)
+                {
+                    Elements starts_at = element.getElementsByAttributeValue("class", "starts-at");
+                    Elements ends_at = element.getElementsByAttributeValue("class", "ends-at");
+                    Elements locations = element.getElementsByAttributeValue("class", "location");
+                    Elements blurbs = element.getElementsByAttributeValue("class", "blurb");
+                    Elements titles = element.getElementsByAttributeValue("class", "title");
+
+
+                    if(starts_at.size()>0)
+                        for(Element elem:starts_at)
+                            parsedString += elem.ownText() +" |";
+                    else
+                        parsedString += "-----|";
+                    if(ends_at.size()>0)
+                        for(Element elem:ends_at)
+                            parsedString += elem.ownText().replace("to","") +" |";
+                    else
+                        parsedString += "-----|";
+                    if(locations.size()>0)
+                        for(Element elem:locations)
+                            parsedString += elem.ownText() +" |";
+                    else
+                        parsedString += "-----|";
+                    if(blurbs.size()>0)
+                        for(Element elem:blurbs)
+                            parsedString += elem.ownText() +" |";
+                    else
+                        parsedString += "-----|";
+                    if(titles.size()>0)
+                        for(Element elem:titles)
+                        {
+                            Elements hrefs = elem.getElementsByAttribute("href");
+                            if (hrefs.size()>0){
+                                for (Element href:hrefs)
+                                {
+                                    parsedString += hrefUrl+href.attr("href") +" |";
+                                }
+                            }
+                            else
+                                parsedString += "-----|";
+                            parsedString += elem.text();
+                        }
+                    else
+                        parsedString += "-----";
+
+                    parsedString += "\n";
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            return parsedString;
+
+        }
+
+        // Reads an InputStream and converts it to a String.
+        public String readIt(InputStream stream, int len) throws IOException, UnsupportedEncodingException {
+            Reader reader = null;
+            reader = new InputStreamReader(stream, "UTF-8");
+            byte[] bytes = new byte[len];
+            StringBuilder x = new StringBuilder();
+
+            int numRead = 0;
+            while ((numRead = stream.read(bytes)) >= 0) {
+                x.append(new String(bytes, 0, numRead));
+            }
+
+            return new String(x);
+        }
+    }
+
+    /*@Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -84,5 +437,5 @@ public class UpComing extends AppCompatActivity implements NavigationView.OnNavi
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
+    }*/
 }

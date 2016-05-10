@@ -43,7 +43,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -57,11 +56,12 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 import static android.graphics.Color.GRAY;
 
-public class UMBCLogIn extends Activity
+public class MyCalendar extends Activity
         implements EasyPermissions.PermissionCallbacks {
     GoogleAccountCredential mCredential;
     private TextView mOutputText;
 
+    private String umbcId;
     private Button addEventButton;
 
     ProgressDialog mProgress;
@@ -76,8 +76,6 @@ public class UMBCLogIn extends Activity
 
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String[] SCOPES = {CalendarScopes.CALENDAR_READONLY};
-    private String userId;
-    private String umbcId;
 
     /**
      * Create the main activity.
@@ -105,8 +103,8 @@ public class UMBCLogIn extends Activity
         int width = dm.widthPixels;
         int height = dm.heightPixels;
 
-        getWindow().setLayout((int) (width * .8), (int) (height * .7));
-        userId = "";
+        //getWindow().setLayout((int) (width * .8), (int) (height * .7));
+
         listView = new ListView(this);
         listView.setLayoutParams(tlp);
         listView.setPadding(16, 16, 16, 16);
@@ -118,6 +116,10 @@ public class UMBCLogIn extends Activity
                 listItems);
         listView.setAdapter(adapter);
 
+        Intent intent = getIntent();
+        umbcId = intent.getStringExtra("umbcId");
+
+
         mOutputText = new TextView(this);
         mOutputText.setLayoutParams(tlp);
         mOutputText.setPadding(16, 16, 16, 16);
@@ -125,17 +127,10 @@ public class UMBCLogIn extends Activity
         mOutputText.setMovementMethod(new ScrollingMovementMethod());
         activityLayout.addView(mOutputText);
 
-        Intent intent = getIntent();
-        String id = intent.getStringExtra("umbcId");
-
-        umbcId = id + "@umbc.edu";
-
-        //Toast.makeText(getApplicationContext(), umbcId+" received",Toast.LENGTH_LONG).show();
-
         mProgress = new ProgressDialog(this);
-        mProgress.setMessage("Loading ...");
+        mProgress.setMessage("Calling Google Calendar API ...");
 
-        //setContentView(activityLayout);
+        setContentView(activityLayout);
 
         // Initialize credentials and service object.
         mCredential = GoogleAccountCredential.usingOAuth2(
@@ -186,23 +181,12 @@ public class UMBCLogIn extends Activity
     private void getResultsFromApi() {
         if (!isGooglePlayServicesAvailable()) {
             acquireGooglePlayServices();
-        } else if (mCredential.getSelectedAccountName() == null ){
-            //Toast.makeText(getApplicationContext(),"line 191",Toast.LENGTH_LONG).show();
+        } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccount();
-        }
-        else if (!isDeviceOnline()) {
+        } else if (!isDeviceOnline()) {
             mOutputText.setText("No network connection available.");
-        }
-
-        else if(mCredential.getSelectedAccountName().equals(umbcId)){
-            Intent intent = new Intent(getApplicationContext(), HomeScreen.class);
-            startActivity(intent);
-            finish();
-        }
-        else {
-            Toast.makeText(getApplicationContext(),"invalid username",Toast.LENGTH_LONG).show();
-
-            finish();
+        } else {
+            new MakeRequestTask(mCredential).execute();
         }
     }
 
@@ -222,15 +206,12 @@ public class UMBCLogIn extends Activity
                 this, Manifest.permission.GET_ACCOUNTS)) {
             String accountName = getPreferences(Context.MODE_PRIVATE)
                     .getString(PREF_ACCOUNT_NAME, null);
-            userId = accountName;
-            if (accountName != null && userId.equals(umbcId)) {
-                //Toast.makeText(getApplicationContext(),accountName+" = "+umbcId, Toast.LENGTH_LONG).show();
-
+            accountName = umbcId;
+            if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
                 getResultsFromApi();
             } else {
                 // Start a dialog from which the user can choose an account
-                //Toast.makeText(getApplicationContext(),"in else", Toast.LENGTH_LONG).show();
                 startActivityForResult(
                         mCredential.newChooseAccountIntent(),
                         REQUEST_ACCOUNT_PICKER);
@@ -275,8 +256,6 @@ public class UMBCLogIn extends Activity
                         data.getExtras() != null) {
                     String accountName =
                             data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-                    //Toast.makeText(getApplicationContext(),accountName,Toast.LENGTH_LONG).show();
-
                     if (accountName != null) {
                         SharedPreferences settings =
                                 getPreferences(Context.MODE_PRIVATE);
@@ -286,10 +265,6 @@ public class UMBCLogIn extends Activity
                         mCredential.setSelectedAccountName(accountName);
                         getResultsFromApi();
                     }
-                }
-                if(resultCode == RESULT_CANCELED){
-                    //Toast.makeText(getApplicationContext(),"finishing ",Toast.LENGTH_LONG).show();
-                    finish();
                 }
                 break;
             case REQUEST_AUTHORIZATION:
@@ -396,12 +371,128 @@ public class UMBCLogIn extends Activity
             final int connectionStatusCode) {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         Dialog dialog = apiAvailability.getErrorDialog(
-                UMBCLogIn.this,
+                MyCalendar.this,
                 connectionStatusCode,
                 REQUEST_GOOGLE_PLAY_SERVICES);
         dialog.show();
     }
 
+    /**
+     * An asynchronous task that handles the Google Calendar API call.
+     * Placing the API calls in their own task ensures the UI stays responsive.
+     */
+    private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
+        private com.google.api.services.calendar.Calendar mService = null;
+        private Exception mLastError = null;
+
+        public MakeRequestTask(GoogleAccountCredential credential) {
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.calendar.Calendar.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("MyCalendar")
+                    .build();
+        }
+
+        /**
+         * Background task to call Google Calendar API.
+         *
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of the next 10 events from the primary calendar.
+         *
+         * @return List of Strings describing returned events.
+         * @throws IOException
+         */
+        private List<String> getDataFromApi() throws IOException {
+            // List the next 10 events from the primary calendar.
+            DateTime now = new DateTime(System.currentTimeMillis());
+            List<String> eventStrings = new ArrayList<String>();
+            Events events = mService.events().list("primary")
+                    .setMaxResults(10)
+                    .setTimeMin(now)
+                    .setOrderBy("startTime")
+                    .setSingleEvents(true)
+                    .execute();
+            List<Event> items = events.getItems();
+
+            for (Event event : items) {
+                DateTime start = event.getStart().getDateTime();
+                DateTime end = event.getEnd().getDateTime();
 
 
+                String startT = start.toString().replace("T", " ").substring(0, 16);//dateFormat.format(start);
+                String endT = end.toString().replace("T", " ").substring(0, 16);
+
+                if (start == null) {
+                    // All-day events don't have start times, so just use
+                    // the start date.
+                    start = event.getStart().getDate();
+                }
+                String loc = event.getLocation()==null? "":"At "+event.getLocation();
+                eventStrings.add(
+                        String.format("%s \nFrom %s to %s\n%s\n",
+                                event.getSummary(), startT, endT, loc));
+            }
+            return eventStrings;
+        }
+
+
+        @Override
+        protected void onPreExecute() {
+            mOutputText.setText("");
+            mProgress.show();
+        }
+
+        @Override
+        protected void onPostExecute(List<String> output) {
+            mProgress.hide();
+            if (output == null || output.size() == 0) {
+                mOutputText.setText("No results returned.");
+            } else {
+                adapter.clear();
+                adapter.add("Events from Calendar:");
+                //mOutputText.setText(TextUtils.join("\n", output));
+
+                for (String out : output)
+                    adapter.add(out);
+
+
+                //listView.setAdapter(adapter);
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mProgress.hide();
+            if (mLastError != null) {
+                if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
+                    showGooglePlayServicesAvailabilityErrorDialog(
+                            ((GooglePlayServicesAvailabilityIOException) mLastError)
+                                    .getConnectionStatusCode());
+                } else if (mLastError instanceof UserRecoverableAuthIOException) {
+                    startActivityForResult(
+                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
+                            MyCalendar.REQUEST_AUTHORIZATION);
+                } else {
+                    mOutputText.setText("The following error occurred:\n"
+                            + mLastError.getMessage());
+                }
+            } else {
+                mOutputText.setText("Request cancelled.");
+            }
+        }
+    }
 }
