@@ -38,7 +38,9 @@ import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.MutableData;
 import com.firebase.client.Query;
+import com.firebase.client.Transaction;
 import com.firebase.client.ValueEventListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -66,7 +68,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EventsActivity extends AppCompatActivity implements View.OnClickListener,
-        GoogleMap.OnMarkerClickListener, OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener {
+        GoogleMap.OnMarkerClickListener, OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener, LocationListener{
 
     private GoogleMap googleMap;
     private Handler zoomHandler = new Handler();
@@ -78,27 +80,25 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
     private final double MAX_EAST_LONGITUDE = -76.69;//-76.70298434793949;
     private final double MAX_WEST_LONGITUDE = -76.73;//-76.72009818255901;
 
-    private static final long EXPIRES_AFTER = 2*60*60; //The number of seconds for data to expire
+    private static final long EXPIRES_AFTER = 5*60; //The number of seconds for data to expire
+    private static final int GET_CONTENT = 1;
 
     private boolean bool = false;
     private double currentLatitude, currentLongitude = 0.0;
 
     private Button picture, video, addMedia;
 
-    private MyLocationListener location;
     private LocationManager lm;
 
-    private Uri saved_pictureUri;
-    private long secsSinceEpoch;
+    private Uri content_Uri;
+    private Button submitButton;
 
     private String UMBC_username;
     private String current_content = null;
 
     private LatLng userLocation = null;
 
-    private EditText pictureText, videoText;
-
-    private UpdateUserLocation updateUserLocation;
+    private EditText descriptionText;
 
     //These prevent us from having to loop through the database
     //  This maps uniqueID to marker
@@ -132,6 +132,9 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // enables me to put my custom images in the navbar
+        navigationView.setItemIconTintList(null);
+
         // sets all the intents for if a user clicks one of the buttons in the navbar
         homeScreen = new Intent(this, HomeScreen.class);
         upComing = new Intent(this, UpComing.class);
@@ -140,22 +143,21 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         phoneBook = new Intent(this, PhoneBook.class);
 
 
-        picture = (Button) findViewById(R.id.pictureButton);
-        video = (Button) findViewById(R.id.videoButton);
+        //picture = (Button) findViewById(R.id.pictureButton);
+        //video = (Button) findViewById(R.id.videoButton);
         addMedia = (Button) findViewById(R.id.mediaButton);
 
-        picture.setOnClickListener(this);
-        video.setOnClickListener(this);
+        //picture.setOnClickListener(this);
+        //video.setOnClickListener(this);
         addMedia.setOnClickListener(this);
 
         lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        location = new MyLocationListener();
 
         // ***************** pick the stringest signal gps/wifi
 
         try
         {
-            lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, location);
+            lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
         }
         catch(SecurityException e)
         {
@@ -172,6 +174,8 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
         Intent this_intent = getIntent();
         if(this_intent != null) UMBC_username = this_intent.getStringExtra("UMBC_email");
+
+        UMBC_username = "lmc3";
     }
 
     // this is the handler that constantly monitors the map to make sure the user doesn't
@@ -243,208 +247,90 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         uiSettings.setMapToolbarEnabled(false);
     }
 
+    //Method for shooting off the AddMedia intent
     @Override
     public void onClick(View v) {
-
-        // calls the function to create a unique file name
-        //String fileName = createUniqueFileName();
-
-        secsSinceEpoch = System.currentTimeMillis()/1000;
-
-        String fileName = "" + secsSinceEpoch + "_" + UMBC_username;
-
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            //requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
-        }
-
         switch (v.getId())
         {
-
-            case R.id.pictureButton:
-
-                // in the case of a picture, the file is set to the .png type
-                fileName = "Picture_" + fileName + ".png";
-
-                // Get the filename of the picture file
-                File pictureFile = getContentFile("Pictures", fileName);
-
-                // declares a new camera intent to capture a photo
-                Intent pictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-                // gets the Uri of the file
-                Uri pictureSubmissionUri = Uri.fromFile(pictureFile);
-
-                //We have to save this because getting the Uri is unreliable from Camera for Pictures
-                saved_pictureUri = pictureSubmissionUri;
-
-                // pass the Uri of the video to the intent
-                pictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureSubmissionUri);
-
-                // starts the camera intent that captures video
-                startActivityForResult(pictureIntent, 1);
-
-                break;
-
-            case R.id.videoButton:
-
-                // in the case of a video, the file is set to the .mp4 type
-                fileName = "Video_" + fileName + ".mp4";
-
-                // Get the filename of the video file
-                File videoFile = getContentFile("Videos", fileName);
-
-                // declares a new camera intent to capture video
-                Intent videoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-
-                // gets the Uri of the file
-                Uri videoUri = Uri.fromFile(videoFile);
-
-                // pass the Uri of the video to the intent
-                videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, videoUri);
-
-                // 10 MB size limit
-                videoIntent.putExtra(MediaStore.EXTRA_SIZE_LIMIT, 10485760L);
-
-                Log.d("OnClick:", "" + secsSinceEpoch);
-
-                // starts the camera intent that captures video
-                startActivityForResult(videoIntent, 2);
-
-                break;
-
             case R.id.mediaButton:
-
                 // starts the activity that add the media to the database
                 Intent addMedia = new Intent(this, AddMedia.class);
-                startActivity(addMedia);
-
+                addMedia.putExtra("UMBC_Email", UMBC_username);
+                startActivityForResult(addMedia, GET_CONTENT);
                 break;
         }
     }
 
-    // method for handling the results of capturing a picture or a video
+    //Method for handling the results of capturing a picture or a video
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         // if the action was to capture a picture, then store all relevant data in the database
-        if (requestCode == 1 && resultCode == RESULT_OK) {
+        if (requestCode == GET_CONTENT && resultCode == RESULT_OK)
+        {
+            //This has a default, but it *should* never be used
+            boolean isVideo = data.getBooleanExtra("IS_VIDEO", false);
+            //This is the returned seconds since epoch (from when the content was created)
+            final long secsSinceEpoch = data.getLongExtra("SECS_EPOCH", 0);
+            final String type = isVideo ? "Video" : "Picture";
 
             // creates a new dialog box
             final Dialog dialog = new Dialog(this);
-            dialog.setContentView(R.layout.imagesubmission);
+
+            //This has been made reliable (and uniform)
+            content_Uri = data.getData();
+
+            if(!isVideo) //If the content is a picture
+            {
+                dialog.setContentView(R.layout.imagesubmission);
+                // sets up the image from xml file
+                ImageView image = (ImageView) dialog.findViewById(R.id.imageSubmissionView);
+                image.setImageURI(content_Uri);
+
+                descriptionText = (EditText) dialog.findViewById(R.id.editTextPicture);
+                submitButton = (Button) dialog.findViewById(R.id.pictureSubmitButton);
+            }
+            else    //This is a video
+            {
+                dialog.setContentView(R.layout.videosubmission);
+                // sets up the videoview from xml file
+                VideoView video = (VideoView) dialog.findViewById(R.id.videoSubmissionView);
+                video.setVideoURI(content_Uri);
+                video.start();
+
+                // upon the video being ready to play, the media player will declare to keep
+                // looping the video
+                video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        mp.setLooping(true);
+                    }
+                });
+
+                descriptionText = (EditText) dialog.findViewById(R.id.editTextVideo);
+                submitButton = (Button) dialog.findViewById(R.id.videoSubmitButton);
+            }
             dialog.setCanceledOnTouchOutside(true);
             dialog.getWindow().setLayout(800, 1220);
             dialog.show();
-
-            // gets rid of the dim that is enabled by default
-            dialog.getWindow().setDimAmount(0.0f);
-
-            // sets up the image from xml file
-            ImageView image = (ImageView) dialog.findViewById(R.id.imageSubmissionView);
-
-            //This is ugly, but it is a quick and dirty hack
-            //  This Uri was saved from the setup to the Camera Intent
-            image.setImageURI(saved_pictureUri);
-
-            pictureText = (EditText) dialog.findViewById(R.id.editTextPicture);
-            final Button pictureSubmit = (Button) dialog.findViewById(R.id.pictureSubmitButton);
-
+            dialog.getWindow().setDimAmount(0.0f);  // gets rid of the dim that is enabled by default
             // click listener for the submit button
-            pictureSubmit.setOnClickListener(new View.OnClickListener() {
+            submitButton.setOnClickListener(new View.OnClickListener()
+            {
                 @Override
-                public void onClick(View v) {
+                public void onClick(View v)
+                {
                     dialog.dismiss();
 
                     // if the user's location via gps can not currently be determined
                     // then do not create the post
                     // cancel, and alert the user
-                    if(userLocation != null){
-
-                        String media;
-                        try
-                        {
-                            InputStream is = getContentResolver().openInputStream(saved_pictureUri);
-                            byte[] bytes;
-                            byte[] buffer = new byte[8192];
-                            int bytesRead;
-                            ByteArrayOutputStream output = new ByteArrayOutputStream();
-                            try {
-                                while ((bytesRead = is.read(buffer)) != -1) {
-                                    output.write(buffer, 0, bytesRead);
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            bytes = output.toByteArray();
-                            media = Base64.encodeToString(bytes, Base64.DEFAULT);
-                            // description of media file
-                            String desc = pictureText.getText().toString();
-                            Content picture = new Content("Picture", location.getLatLong().longitude, location.getLatLong().latitude,
-                                    secsSinceEpoch, media, desc, UMBC_username);
-                            ref.push().setValue(picture);
-                        }
-                        catch (FileNotFoundException e)
-                        {
-                            e.printStackTrace();
-                        }
-                    }
-                    else{
-                        Toast.makeText(getApplicationContext(), "No connection to GPS", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        }
-
-        // if the method was to capture a video, then store all relevant data in the database
-        if (requestCode == 2 && resultCode == RESULT_OK) {
-
-            // creates a new dialog box
-            final Dialog dialog = new Dialog(this);
-            dialog.setContentView(R.layout.videosubmission);
-            dialog.setCanceledOnTouchOutside(true);
-            dialog.getWindow().setLayout(800, 1220);
-            dialog.show();
-
-            // gets rid of the dim that is enabled by default
-            dialog.getWindow().setDimAmount(0.0f);
-
-            final Uri videoUri = data.getData();
-
-            // sets up the videoview from xml file
-            final VideoView video = (VideoView) dialog.findViewById(R.id.videoSubmissionView);
-            video.setVideoURI(videoUri);
-            video.start();
-
-            // upon the video being ready to play, the media player will declare to keep
-            // looping the video
-            video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    mp.setLooping(true);
-                }
-            });
-
-            videoText = (EditText) dialog.findViewById(R.id.editTextVideo);
-            Button pictureSubmit = (Button) dialog.findViewById(R.id.videoSubmitButton);
-
-            // click listener for the submit button
-            pictureSubmit.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                    //Since there is so much processing involved, we may want to
-                    //  remove the OnClickListener
-
-                    // if the user's location via gps can not currently be determined
-                    // then do not create the post
-                    // cancel, and alert the user
-                    if(userLocation != null){
-
-                        // create object and push it to the database
+                    LatLng cur_loc = userLocation;
+                    if (cur_loc != null)
+                    {
                         String media;
                         try {
-                            InputStream is = getContentResolver().openInputStream(videoUri);
+                            InputStream is = getContentResolver().openInputStream(content_Uri);
                             byte[] bytes;
                             byte[] buffer = new byte[8192];
                             int bytesRead;
@@ -459,18 +345,15 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                             bytes = output.toByteArray();
                             media = Base64.encodeToString(bytes, Base64.DEFAULT);
                             // description of media file
-                            String desc = videoText.getText().toString();
-
-                            Content video = new Content("Video", location.getLatLong().longitude, location.getLatLong().latitude,
+                            String desc = descriptionText.getText().toString();
+                            //Log.d("Location", cur_loc.toString());
+                            Content picture = new Content(type, cur_loc.longitude, cur_loc.latitude,
                                     secsSinceEpoch, media, desc, UMBC_username);
-                            ref.push().setValue(video);
-                        }
-                        catch (FileNotFoundException e)
-                        {
+                            ref.push().setValue(picture);
+                        } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         }
-                    }
-                    else{
+                    } else {
                         Toast.makeText(getApplicationContext(), "No connection to GPS", Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -582,6 +465,30 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         return new File(directory.getAbsolutePath() + "/" + filename);
     }
 
+    //These 4 methods are for LocationListener
+    //  For a robust app, these potentially would have more in them
+    //  But we're in a time crunch
+    @Override
+    public void onLocationChanged(Location location) {
+        userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        //Log.d("OnLocationChanged", userLocation.toString());
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
     private class WriteDataToFile extends AsyncTask<File, Void, Uri> {
 
         private String data, uniqueID;
@@ -676,7 +583,6 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                     });
 
                     TextView text = (TextView) dialog.findViewById(R.id.viewVideoText);
-                    // textview for umbc username
                     text.setText(descriptions.get(uniqueID));
                 }
                 else //Picture
@@ -723,6 +629,8 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         Firebase.setAndroidContext(this);
         ref = new Firebase("https://gritapptest4112016.firebaseio.com").child("content");
 
+        Log.d("Hello", "Hello");
+
         ref.addChildEventListener(
                 new ChildEventListener() {
                     //This is triggered for every existing element and every one
@@ -732,9 +640,22 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
                         String uniqueID = dataSnapshot.getKey();
-                        Log.d("OnChildAdded", uniqueID);
+                        //Log.d("OnChildAdded", uniqueID);
+                        //This is causing us problems. We're downloading the WHOLE file...
+
+                        /*double latitude, longitude;
+                        String desc, user, type;
+                        long time;
+                        latitude = dataSnapshot.child("latitude").getValue(Double.class);
+                        longitude = dataSnapshot.child("longitude").getValue(Double.class);
+                        time = dataSnapshot.child("time").getValue(Long.class);
+                        desc = dataSnapshot.child("desc").getValue(String.class);
+                        user = dataSnapshot.child("user").getValue(String.class);
+                        type = dataSnapshot.child("type").getValue(String.class);*/
                         Content c = dataSnapshot.getValue(Content.class);
+                        //Content c = new Content(type, longitude, latitude, time, null, desc, user);
                         placeMarker(c, uniqueID);
+                        Log.d("Content: ", c.toString());
                     }
 
                     //This tells us that we need to remove a Marker and delete the
@@ -764,26 +685,8 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
         zoomHandler.post(MoniterZoom);
 
-        // start asynctask that constantly updates the user's location
-        updateUserLocation = new UpdateUserLocation();
-        updateUserLocation.execute();
-    }
-
-    private class UpdateUserLocation extends AsyncTask<String, Integer, String> {
-
-        @Override
-        protected String doInBackground(String... params) {return null;}
-
-        @Override
-        protected void onPostExecute(String result) {
-
-            // updates the user's current location
-            userLocation = location.getLatLong();
-
-            // make the async task repeat itself so it can keep updating the user's location
-            updateUserLocation = new UpdateUserLocation();
-            updateUserLocation.execute();
-        }
+        //TimeoutDestroyFiles destroy = new TimeoutDestroyFiles();
+        //destroy.execute();
     }
 
     @Override
@@ -805,7 +708,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        lm.removeUpdates(location);
+        lm.removeUpdates(this);
     }
 
     //This class allows us to push things to the database easily and efficiently
@@ -856,7 +759,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
         @Override
         public String toString() {
-            return "Content{Type: " + type + " Lon: " + lon + " Lat: " + " Time: " + time + " Data: " + data + " Desc: " + desc + " User: " + user + "}";
+            return "Content{Type: " + type + " Lon: " + lon + " Lat: " + lat + " Time: " + time + " Data: " + data + " Desc: " + desc + " User: " + user + "}";
         }
     }
 
@@ -879,6 +782,8 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         markers.put(uniqueID, marker);
         uniqueIDs.put(title, uniqueID);
         descriptions.put(uniqueID, content.getDesc());
+
+        Log.d("Descriptions: ", descriptions.toString());
         //As an alternative to when we click on a Marker, we could write the
         //  temp file now (since we already have the filename and the data)
     }
@@ -899,7 +804,7 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
 
         //Remove tempfile (if any) associated with this marker
         String type = title.split("_")[0];
-        if(title.equals("Video"))
+        if(type.equals("Video"))
         {
             title += ".mp4";
         }
@@ -925,6 +830,9 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
         protected Void doInBackground(Void... params) {
             //We need to wait for the file to be not busy
             //  We can safely assume that it won't be being written, just watched/seen
+
+            //We should be able to call
+
             while(file_to_delete.equals(current_content)) {}
             //Now it isn't being watched
             if(file.exists())
@@ -934,6 +842,65 @@ public class EventsActivity extends AppCompatActivity implements View.OnClickLis
             return null;
         }
     }
+
+    /*private class TimeoutDestroyFiles extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+            //We should be able to sleep here
+            //Thread.sleep(60*1000);
+            ref.addListenerForSingleValueEvent(new ValueEventListener()
+            {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot)
+                {
+                    long secsEpoch = System.currentTimeMillis() / 1000;
+                    final ArrayList<DataSnapshot> toBeRemoved = new ArrayList<DataSnapshot>();
+                    for (DataSnapshot snap : dataSnapshot.getChildren()) {
+                        long secsSinceEpochContent = snap.getValue(Content.class).getTime();
+                        if (secsEpoch - secsSinceEpochContent >= EXPIRES_AFTER) //If it should be deleted
+                        {
+                            toBeRemoved.add(snap);
+                        }
+                    }
+                    if (toBeRemoved.size() > 0) //There is an element to delete
+                    {
+                        ref.runTransaction(new Transaction.Handler()
+                        {
+                            @Override
+                            public Transaction.Result doTransaction(MutableData mutableData)
+                            {
+                                for (DataSnapshot snap : toBeRemoved)
+                                {
+                                    String key = snap.getKey();
+                                    mutableData.child(key).setValue(null);
+                                }
+                                return Transaction.success(mutableData);
+                            }
+
+                            @Override
+                            public void onComplete(FirebaseError firebaseError, boolean b, DataSnapshot dataSnapshot) {
+
+                        }
+                        });
+                    }
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError)
+                {
+
+                }
+            });
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            TimeoutDestroyFiles dest = new TimeoutDestroyFiles();
+            dest.execute();
+        }
+    }
+    */
 
     @Override
     public void onBackPressed() {

@@ -13,28 +13,10 @@
         android:layout_height="65dp"
         android:drawableLeft="@drawable/cross"
         android:paddingLeft="14dp"
-        android:layout_marginRight="160dp"
+        android:layout_marginRight="55dp"
         android:layout_marginBottom="25dp"
         android:layout_gravity="right|bottom"
         android:background="@drawable/mediabutton"
         />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right|bottom"
-        android:layout_marginRight="50dp"
-        android:layout_marginBottom="51dp"
-        android:id="@+id/pictureButton"
-        android:text="Picture"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right|bottom"
-        android:layout_marginRight="50dp"
-        android:layout_marginBottom="12dp"
-        android:id="@+id/videoButton"
-        android:text="Video"/>
 
 </fragment>
