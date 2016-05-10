@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#181818">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -18,7 +19,9 @@
         android:layout_gravity="center_horizontal"
         android:layout_below="@+id/imageSubmissionView"
         android:layout_weight=".05"
-        android:text="Say something about your picture!" />
+        android:text="Say something about your picture!"
+        android:textColor="#ffc113"
+        android:textStyle="bold"/>
 
     <EditText
         android:layout_width="wrap_content"
@@ -26,14 +29,28 @@
         android:id="@+id/editTextPicture"
         android:layout_gravity="center_horizontal"
         android:layout_below="@+id/textViewPicture"
-        android:layout_weight=".05"/>
+        android:layout_weight=".05"
+        android:textColor="#ffc113"
+        android:textStyle="bold"/>
 
-    <Button
+    <!--<Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/pictureSubmitButton"
         android:layout_gravity="center_horizontal"
         android:layout_below="@+id/editTextPicture"
         android:layout_weight=".05"
-        android:text="Submit" />
+        android:text="Submit" />-->
+
+    <Button
+        android:id="@+id/pictureSubmitButton"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:drawableLeft="@drawable/cross"
+        android:paddingLeft="14dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/editTextPicture"
+        android:layout_weight=".05"
+        android:background="@drawable/mediabutton"
+        />
 </LinearLayout>

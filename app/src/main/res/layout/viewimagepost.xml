@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#181818">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -18,5 +19,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:layout_gravity="center_horizontal"
         android:layout_below="@+id/viewImagePost"
-        android:layout_weight=".05" />
+        android:layout_weight=".05"
+        android:textColor="#ffc113"
+        android:textStyle="bold"/>
 </LinearLayout>

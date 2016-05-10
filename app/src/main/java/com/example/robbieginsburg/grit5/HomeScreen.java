@@ -52,6 +52,9 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // enables me to put my custom images in the navbar
+        navigationView.setItemIconTintList(null);
+
         // sets all the intents for if a user clicks one of the buttons in the navbar
         homeScreen = new Intent(this, HomeScreen.class);
         upComing = new Intent(this, UpComing.class);

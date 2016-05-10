@@ -40,7 +40,7 @@
         android:background="@color/gray"
         android:layout_gravity="center">
 
-        <Button
+        <!--<Button
             android:id="@+id/mediaButton2"
             android:layout_width="65dp"
             android:layout_height="65dp"
@@ -48,7 +48,7 @@
             android:paddingLeft="14dp"
             android:layout_gravity="left"
             android:background="@drawable/mediabutton_enabled"
-            />
+            />-->
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tab_layout"
