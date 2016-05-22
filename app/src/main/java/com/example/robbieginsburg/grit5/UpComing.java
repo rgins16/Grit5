@@ -89,15 +89,14 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
         navigationView.setNavigationItemSelectedListener(this);
 
         // enables me to put my custom images in the navbar
-        navigationView.setItemIconTintList(null);*/
+        navigationView.setItemIconTintList(null);
 
         // sets all the intents for if a user clicks one of the buttons in the navbar
         homeScreen = new Intent(this, HomeScreen.class);
         upComing = new Intent(this, UpComing.class);
         happeningNow = new Intent(this, EventsActivity.class);
         infoMap = new Intent(this, InfoMaps.class);
-        phoneBook = new Intent(this, PhoneBook.class);
-
+        phoneBook = new Intent(this, PhoneBook.class);*/
 
         LinearLayout activityLayout = new LinearLayout(this);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -439,3 +438,4 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
         return true;
     }*/
 }
+

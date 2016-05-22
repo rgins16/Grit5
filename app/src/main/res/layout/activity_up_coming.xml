@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.example.robbieginsburg.grit5.MenuButton"
+    tools:context="com.example.robbieginsburg.grit5.UpComing"
     android:orientation="vertical">
 
     <android.support.design.widget.AppBarLayout
@@ -39,7 +39,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/drawer_layout"
+        android:id="@+id/drawer_layout2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
@@ -48,7 +48,7 @@
         <include layout="@layout/content_up_coming" />
 
         <android.support.design.widget.NavigationView
-            android:id="@+id/nav_view"
+            android:id="@+id/nav_view2"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="start"
