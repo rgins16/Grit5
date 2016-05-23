@@ -30,12 +30,13 @@ public class PopUpUmbcEvent extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pop_up_umbc_event);
 
-
+        // sets height and width
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         int width = dm.widthPixels;
         int height = dm.heightPixels;
 
+        // gets the event info from the previous activity and siaplays it
         getWindow().setLayout((int) (width * .8), (int) (height * .7));
         final TextView textView = (TextView) findViewById(R.id.textView);
         Bundle extras = getIntent().getExtras();
@@ -45,6 +46,7 @@ public class PopUpUmbcEvent extends AppCompatActivity {
             textView.setText(item);
         }
 
+        // button for going to the event web page
         Button buttonGoToWebPage = (Button) findViewById(R.id.buttonGoToWebPage);
         buttonGoToWebPage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,6 +61,7 @@ public class PopUpUmbcEvent extends AppCompatActivity {
             }
         });
 
+        // button for going back
         Button buttonGoBack = (Button)findViewById(R.id.buttonGoBack);
         buttonGoBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,6 +71,7 @@ public class PopUpUmbcEvent extends AppCompatActivity {
         });
 
 
+        // button for adding event to calendar
         Button buttonAddToCalendar = (Button) findViewById(R.id.buttonAddToCalendar);
         buttonAddToCalendar.setOnClickListener(
                 new View.OnClickListener() {
@@ -80,23 +84,26 @@ public class PopUpUmbcEvent extends AppCompatActivity {
                         intent.setData(CalendarContract.Events.CONTENT_URI);
                         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-M-d-h:mm aa");
                         try {
+                            // formats the start time and passes it to Google Calendar
                             String start = today + "-" + fields[1].replace("Starts at  : ", "");
                             Date date = dateFormat.parse(start);
                             //Toast.makeText(getBaseContext(), date.toString(), Toast.LENGTH_LONG).show();
                             intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, date.getTime());
+
+                            // formats the end time and parses it to Google calendar
                             String end = today + "-" + fields[2].replace("Ends at    : ", "");
                             Date date2 = dateFormat.parse(end);
                             intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, date2.getTime());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+
+                        // passes the description, location, and title to Google Calendar
                         intent.putExtra(CalendarContract.Events.DESCRIPTION, fields[4].replace("Description: ", ""));
                         intent.putExtra(CalendarContract.Events.EVENT_LOCATION, fields[3].replace("Location   : ", ""));
                         intent.putExtra(CalendarContract.Events.TITLE, fields[0].replace("Title      : ", ""));
                         startActivity(intent);
                         //Toast.makeText(getBaseContext(), "event added to calendar", Toast.LENGTH_LONG).show();
-
-
                     }
                 }
         );

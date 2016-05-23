@@ -98,6 +98,8 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
         infoMap = new Intent(this, InfoMaps.class);
         phoneBook = new Intent(this, PhoneBook.class);*/
 
+        // specifies linear layout for the activity
+        // defines the layout details
         LinearLayout activityLayout = new LinearLayout(this);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -106,74 +108,90 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
         activityLayout.setOrientation(LinearLayout.VERTICAL);
         activityLayout.setPadding(16, 16, 16, 16);
 
+        // creates a viewgroup to hold all the events
         ViewGroup.LayoutParams tlp = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
 
-
-
+        // creates a calendar object to get the current date
+        // this will be displayed at the top of the page
+        // to let the user know what day it is
         Calendar cal = Calendar.getInstance();
         int day = cal.get(Calendar.DAY_OF_MONTH);
         int month = cal.get(Calendar.MONTH)+1;
         int year = cal.get(Calendar.YEAR);
 
+        // saves the date to the textview and displays it
         urlText = new TextView(this);
         urlText.setLayoutParams(tlp);
         urlText.setPadding(16, 16, 16, 16);
         activityLayout.addView(urlText);
-
         urlText.setText("http://my.umbc.edu/events/" + year + "/" + month + "/" + day);
 
+        // saves the date for later
         today = ""+year+"-"+month+"-"+day;
 
+        // sets a new text view to empty
         textView = new TextView(this);
         textView.setLayoutParams(tlp);
         textView.setPadding(16, 16, 16, 16);
         activityLayout.addView(textView);
         textView.setText("");
 
+        // sets height and width
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         int width = dm.widthPixels;
         int height = dm.heightPixels;
 
 
+        // sets up a listview in the view group
         listView = new ListView(this);
         tlp.height = (int)(height * 0.7);
         listView.setLayoutParams(tlp);
         listView.setPadding(16, 16, 16, 16);
         activityLayout.addView(listView);
 
-
+        //
         Intent intent = getIntent();
         umbcId = intent.getStringExtra("umbcId");
 
+        // initialises the list of events, and linked lists that are each event
+        // the list will hold all of the linked lists
         listItems=new ArrayList<String>();
         adapter=new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1,
                 listItems);
         listView.setAdapter(adapter);
 
+        // sets the view to the one that is created above
         setContentView(activityLayout);
 
         //textView.setText(date.toString());
         String stringUrl = urlText.getText().toString();
         urlText.setEnabled(false);
 
+        // sets the loading text
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Loading the events ...");
 
-
-        ConnectivityManager connMgr = (ConnectivityManager)
-                getSystemService(Context.CONNECTIVITY_SERVICE);
+        // gets the active network connection info
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+        // if there is an active network connection
         if (networkInfo != null && networkInfo.isConnected()) {
+            // call the download webpage async task
             new DownloadWebpageTask().execute(stringUrl);
         } else {
+            // otherwise state there is no available connection
             textView.setText("No network connection available.");
         }
 
+        // on click listener for clicking an item on the list view
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            // start the intent for the popup that appears when an event is clicked
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
@@ -187,6 +205,7 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
         });
 
 
+        // button for viewing itinerary
         Button buttonMyCalendar = new Button(this);
         buttonMyCalendar.setText("My Itinerary");
         buttonMyCalendar.setOnClickListener(new View.OnClickListener() {
@@ -199,6 +218,7 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
         });
         activityLayout.addView(buttonMyCalendar);
 
+        // button for going back
         Button buttonGoBack = new Button(this);
         buttonGoBack.setText("Back");
         buttonGoBack.setOnClickListener(new View.OnClickListener() {
@@ -243,13 +263,16 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
         return newItem;
     }
 
-
+    // async task for downloading the events webpage from umbc and reading it
     private class DownloadWebpageTask extends AsyncTask<String, Void, String> {
+
         @Override
         protected String doInBackground(String... urls) {
 
-            // params comes from the execute() call: params[0] is the url.
+            // params comes from the execute()
+            // the parameter is the url which includes the current date
             try {
+                // gets the content to be displayed to the user
                 return downloadUrl(urls[0]);
             } catch (IOException e) {
                 return "Unable to retrieve web page. URL may be invalid.";
@@ -257,6 +280,8 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
         }
 
 
+        // while the content is being fetched and converted to readable format, show the user
+        // a loading message
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -270,6 +295,7 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
             textView.setText("The events happening today are:");
             String []eventItems =  result.split("\n");
             for (String eventItem: eventItems){
+                // makes the event look nice
                 String newItem = processListItem(eventItem);
                 adapter.add(newItem);
             }
@@ -279,7 +305,9 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
         // the web page content as a InputStream, which it returns as
         // a string.
         private String downloadUrl(String myurl) throws IOException {
+
             InputStream is = null;
+
             // Only display the first 500 characters of the retrieved
             // web page content.
             int len = 50000;
@@ -291,6 +319,7 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
                 conn.setConnectTimeout(25000 /* milliseconds */);
                 conn.setRequestMethod("GET");
                 conn.setDoInput(true);
+
                 // Starts the query
                 conn.connect();
                 int response = conn.getResponseCode();
@@ -299,6 +328,8 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
 
                 // Convert the InputStream into a string
                 String contentAsString = readIt(is, len);
+
+                // converts the string into the readable object that will be displayed to the user
                 String result = parseXmlString(contentAsString);
                 return result;
 
@@ -311,6 +342,8 @@ public class UpComing extends AppCompatActivity /*implements NavigationView.OnNa
             }
         }
 
+        // takes the string from the input stream from the website, and formats it so
+        // it will look nice to the user
         public String parseXmlString(String html){
             //textView.setText(str);
 
